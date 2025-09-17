@@ -520,7 +520,7 @@
 
         <div class="status-bar">
             <div class="status-item">
-                <div class="status-value" id="goldAmount">9800</div>
+                <div class="status-value" id="goldAmount">1000</div>
                 <div class="status-label">💰 ゴールド</div>
             </div>
             <div class="status-item">
@@ -558,38 +558,6 @@
                 </div>
             </div>
 
-            <div id="specialReward" class="reward-modal hidden">
-                <div class="reward-content">
-                    <div class="fireworks"></div>
-                    <h2 class="reward-title">🎉 特別報酬達成！ 🎉</h2>
-                    <p class="reward-message">
-                        おめでとうございます！<span class="gold-highlight">ゴールド10,000</span>を達成しました！<br>
-                        特別特典として<strong>無料投資相談会</strong>への参加権を獲得されました！
-                    </p>
-                    
-                    <div class="consultation-info">
-                        <h3 class="consultation-title">🏆 無料投資相談会のご案内</h3>
-                        <p class="consultation-details">
-                            投資のプロフェッショナルがあなたの資産運用について個別にアドバイスいたします。
-                        </p>
-                        <ul class="consultation-features">
-                            <li>個人の状況に合わせたポートフォリオ提案</li>
-                            <li>リスク許容度の診断と最適な投資戦略</li>
-                            <li>税制優遇制度（NISA、iDeCo）の活用方法</li>
-                            <li>老後資金シミュレーション</li>
-                            <li>投資初心者向けの丁寧なサポート</li>
-                        </ul>
-                        <p style="font-size: 1rem; color: #87ceeb; margin-top: 15px;">
-                            ※ 通常価格：5,000円 → <span class="gold-highlight">完全無料</span>
-                        </p>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="btn btn-special" onclick="openConsultationForm()">相談会に申し込む</button>
-                        <button class="btn" onclick="closeRewardModal()">後で確認する</button>
-                    </div>
-                </div>
-            </div>
 
             <div id="quizSection" class="quiz-section">
                 <div class="character-dialogue">
@@ -616,13 +584,12 @@
 
     <script>
         let gameState = {
-            gold: 9800,
+            gold: 1000,
             level: 1,
             exp: 0,
             currentArea: 'map',
             currentQuestionIndex: 0,
-            currentAreaQuestions: [],
-            hasUnlockedConsultation: false
+            currentAreaQuestions: []
         };
 
         const gameData = {
@@ -749,11 +716,6 @@
             const goldElement = document.getElementById('goldAmount');
             goldElement.textContent = gameState.gold;
             
-            if (gameState.gold >= 10000 && !gameState.hasUnlockedConsultation) {
-                goldElement.classList.add('gold-highlight');
-                showSpecialReward();
-                gameState.hasUnlockedConsultation = true;
-            }
             
             document.getElementById('playerLevel').textContent = gameState.level;
             document.getElementById('playerExp').textContent = gameState.exp;
@@ -853,50 +815,6 @@
             updateDisplay();
         }
 
-        function showSpecialReward() {
-            const modal = document.getElementById('specialReward');
-            modal.classList.remove('hidden');
-            
-            createFireworks();
-            
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeRewardModal() {
-            const modal = document.getElementById('specialReward');
-            modal.classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-        function createFireworks() {
-            const fireworksContainer = document.querySelector('.fireworks');
-            fireworksContainer.innerHTML = '';
-            
-            const colors = ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4d79ff', '#9c88ff', '#ffd700'];
-            
-            for (let i = 0; i < 30; i++) {
-                setTimeout(() => {
-                    const firework = document.createElement('div');
-                    firework.className = 'firework';
-                    firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    firework.style.left = Math.random() * 100 + '%';
-                    firework.style.top = Math.random() * 100 + '%';
-                    firework.style.setProperty('--dx', (Math.random() - 0.5) * 200 + 'px');
-                    firework.style.setProperty('--dy', (Math.random() - 0.5) * 200 + 'px');
-                    
-                    fireworksContainer.appendChild(firework);
-                    
-                    setTimeout(() => {
-                        firework.remove();
-                    }, 1500);
-                }, i * 100);
-            }
-        }
-
-        function openConsultationForm() {
-            alert('無料投資相談会のお申し込みありがとうございます！\n\n実際のサービスでは、こちらから詳細な申し込みフォームや連絡先情報が表示されます。\n\n• お名前\n• 連絡先\n• 希望日時\n• 相談内容\n\nなどの情報を入力していただき、専門スタッフよりご連絡いたします。');
-            closeRewardModal();
-        }
 
         updateDisplay();
     </script>
