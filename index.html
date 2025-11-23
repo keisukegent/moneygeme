@@ -1,822 +1,2587 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>マネークエスト - 投資冒険ゲーム</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(45deg, #1a1a2e, #16213e, #0f3460);
-            color: #fff;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="stars" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="%23fff" opacity="0.3"/><circle cx="30" cy="30" r="0.5" fill="%23fff" opacity="0.5"/><circle cx="70" cy="20" r="1.5" fill="%23fff" opacity="0.2"/><circle cx="90" cy="60" r="1" fill="%23fff" opacity="0.4"/><circle cx="50" cy="80" r="0.8" fill="%23fff" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23stars)"/></svg>');
-            z-index: -1;
-            animation: twinkle 3s infinite alternate;
-        }
-
-        @keyframes twinkle {
-            0% { opacity: 0.3; }
-            100% { opacity: 0.8; }
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .game-header {
-            text-align: center;
-            margin-bottom: 30px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 15px;
-            padding: 20px;
-            border: 3px solid #ffd700;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-        }
-
-        .game-title {
-            font-size: 3rem;
-            color: #ffd700;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        .game-subtitle {
-            font-size: 1.2rem;
-            color: #87ceeb;
-            margin-bottom: 20px;
-        }
-
-        .status-bar {
-            display: flex;
-            justify-content: space-around;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 2px solid #4169e1;
-        }
-
-        .status-item {
-            text-align: center;
-        }
-
-        .status-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #ffd700;
-        }
-
-        .status-label {
-            font-size: 0.9rem;
-            color: #87ceeb;
-        }
-
-        .game-area {
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 20px;
-            border: 2px solid #4169e1;
-            box-shadow: 0 0 15px rgba(65, 105, 225, 0.3);
-        }
-
-        .world-map {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .area-card {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .area-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .area-card:hover {
-            transform: translateY(-5px);
-            border-color: #ffd700;
-            box-shadow: 0 10px 20px rgba(255, 215, 0, 0.3);
-        }
-
-        .area-card:hover::before {
-            left: 100%;
-        }
-
-        .area-icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .area-name {
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-
-        .area-description {
-            font-size: 0.9rem;
-            color: #ddd;
-            line-height: 1.4;
-        }
-
-        .quiz-section {
-            display: none;
-            background: rgba(0, 0, 0, 0.9);
-            border-radius: 15px;
-            padding: 30px;
-            border: 3px solid #ff6b6b;
-        }
-
-        .quiz-question {
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-            color: #fff;
-            line-height: 1.6;
-        }
-
-        .quiz-options {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .quiz-option {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
-            padding: 15px;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .quiz-option:hover {
-            background: linear-gradient(135deg, #764ba2, #667eea);
-            border-color: #ffd700;
-            transform: scale(1.02);
-        }
-
-        .character-dialogue {
-            background: rgba(0, 0, 0, 0.9);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            border-left: 5px solid #ffd700;
-            position: relative;
-        }
-
-        .character-name {
-            font-weight: bold;
-            color: #ffd700;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-
-        .character-text {
-            line-height: 1.6;
-            color: #fff;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-            justify-content: center;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            font-weight: bold;
-        }
-
-        .btn:hover {
-            background: linear-gradient(135deg, #764ba2, #667eea);
-            border-color: #ffd700;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-            color: #333;
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #ffed4e, #ffd700);
-        }
-
-        .result-message {
-            text-align: center;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-
-        .result-correct {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            border: 2px solid #1e8449;
-        }
-
-        .result-incorrect {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            border: 2px solid #922b21;
-        }
-
-        .progress-bar {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            height: 20px;
-            margin: 10px 0;
-            overflow: hidden;
-            border: 1px solid #444;
-        }
-
-        .progress-fill {
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            height: 100%;
-            transition: width 0.5s ease;
-            border-radius: 10px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .world-map {
-                grid-template-columns: 1fr;
-            }
-            
-            .game-title {
-                font-size: 2rem;
-            }
-            
-            .status-bar {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-        }
-
-        .float-animation {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .special-reward {
-            background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcf7f, #4d79ff, #9c88ff);
-            background-size: 300% 300%;
-            animation: rainbow 3s ease infinite;
-            border: 3px solid #ffd700;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
-        }
-
-        @keyframes rainbow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .reward-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .reward-content {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            border: 5px solid #ffd700;
-            box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
-            max-width: 600px;
-            width: 90%;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .reward-content::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
-            animation: glow-rotate 4s linear infinite;
-        }
-
-        @keyframes glow-rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .reward-title {
-            font-size: 3rem;
-            color: #ffd700;
-            margin-bottom: 20px;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
-            position: relative;
-            z-index: 1;
-        }
-
-        .reward-message {
-            font-size: 1.4rem;
-            margin-bottom: 30px;
-            line-height: 1.6;
-            position: relative;
-            z-index: 1;
-        }
-
-        .consultation-info {
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 15px;
-            padding: 30px;
-            margin: 20px 0;
-            border: 2px solid #4169e1;
-            position: relative;
-            z-index: 1;
-        }
-
-        .consultation-title {
-            font-size: 1.8rem;
-            color: #87ceeb;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .consultation-details {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            margin-bottom: 20px;
-        }
-
-        .consultation-features {
-            text-align: left;
-            margin: 20px 0;
-        }
-
-        .consultation-features li {
-            margin: 10px 0;
-            padding-left: 20px;
-            position: relative;
-        }
-
-        .consultation-features li::before {
-            content: '✅';
-            position: absolute;
-            left: 0;
-        }
-
-        .btn-special {
-            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
-            color: #fff;
-            font-size: 1.2rem;
-            padding: 15px 30px;
-            border-radius: 30px;
-            border: 3px solid #ffd700;
-            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            animation: special-glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes special-glow {
-            0% { box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5); }
-            100% { box-shadow: 0 5px 30px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 107, 107, 0.3); }
-        }
-
-        .btn-special:hover {
-            background: linear-gradient(135deg, #ffd93d, #ff6b6b);
-            transform: translateY(-3px);
-        }
-
-        .fireworks {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .firework {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            animation: firework 1.5s ease-out infinite;
-        }
-
-        @keyframes firework {
-            0% {
-                opacity: 1;
-                transform: scale(0) translate(0, 0);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(1) translate(var(--dx), var(--dy));
-            }
-        }
-
-        .gold-highlight {
-            color: #ffd700;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            animation: gold-shimmer 2s ease-in-out infinite;
-        }
-
-        @keyframes gold-shimmer {
-            0%, 100% { color: #ffd700; }
-            50% { color: #ffed4e; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マネーライフストーリー｜eラーニング体験版（音声なし）</title>
+<style>
+  :root {
+    --accent: #d06ba0;
+    --accent-soft: #fbd5b5;
+    --card-bg: rgba(255,255,255,0.94);
+  }
+  body {
+    font-family: 'Hiragino Maru Gothic Pro', 'Yu Gothic', system-ui, sans-serif;
+    background: linear-gradient(135deg, #f9e0e9, #d8e9f0);
+    text-align: center;
+    color: #444;
+    padding: 20px;
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 0.8s ease;
+  }
+  h1 { color: #d06ba0; animation: fadeIn 1.2s ease; }
+  #game {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 20px;
+    max-width: 740px;
+    margin: 22px auto;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    animation: slideUp 0.8s ease;
+  }
+  .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  button {
+    margin: 10px;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  button:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+  .status { background: linear-gradient(90deg, #fff4fa, #f0faff); border-radius: 10px; padding: 12px; margin: 10px 0; animation: fadeIn 0.6s ease; }
+  #event { font-size: 18px; margin: 18px 0; animation: fadeIn 0.6s ease; }
+
+  /* チャプターバナー */
+  .chapter-banner {
+    background: linear-gradient(120deg, rgba(208,107,160,0.12), rgba(255,255,255,0.8));
+    border: 1px solid rgba(208,107,160,0.2);
+    border-radius: 16px;
+    padding: 10px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .chapter-banner small {
+    display:block;
+    font-size:12px;
+    color:#777;
+    letter-spacing: normal;
+  }
+
+  /* メーター */
+  .meters {
+    display:grid;
+    gap:10px;
+    margin:12px 0 18px;
+  }
+  .meter {
+    text-align:left;
+  }
+  .meter-label {
+    font-size:12px;
+    color:#777;
+    margin-bottom:4px;
+  }
+  .meter-bar {
+    height:12px;
+    border-radius:999px;
+    background:#f2f2f4;
+    overflow:hidden;
+  }
+  .meter-fill {
+    display:block;
+    height:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg, var(--accent), var(--accent-soft));
+    width:30%;
+    transition:width 0.4s ease;
+  }
+  .meter-value {
+    font-size:12px;
+    color:#555;
+    margin-top:4px;
+  }
+
+  /* コーチボックス */
+  .coach-box { display: none; align-items: center; gap: 12px; max-width: 600px; margin: 8px auto 0; padding: 12px; border-radius: 14px; background: #fff9fd; border: 1px solid #f3d4e5; box-shadow: 0 4px 10px rgba(208,107,160,0.08); opacity: 0; transform: translateY(8px); }
+  .coach-avatar { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: #ffeaf4; display: grid; place-items: center; }
+  .coach-avatar img { width: 56px; height: 56px; display: block; }
+  .coach-name { font-weight: 700; color: #c65e97; font-size: 14px; margin-bottom: 4px; }
+  .coach-text { text-align: left; line-height: 1.6; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* きらきら演出 */
+  .sparkle { position: fixed; width: 10px; height: 10px; background: radial-gradient(circle, #fff 0%, transparent 70%); border-radius: 50%; animation: fall 4s linear infinite; opacity: 0.7; pointer-events: none; }
+  @keyframes fall { 0% { transform: translateY(-10px); opacity: 1; } 100% { transform: translateY(110vh); opacity: 0; } }
+
+  .note { font-size: 12px; color: #777; }
+  .pill { display:inline-block; padding:4px 10px; border-radius: 999px; background:#f3e7ef; color:#a34f84; font-size:12px; margin-left:6px; }
+
+  /* コーチ選択画面 */
+  .select-wrap { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:14px; max-width: 700px; margin: 10px auto; }
+  .coach-card { background:#fff; border:1px solid #f0d2e2; border-radius:16px; padding:14px; box-shadow:0 6px 14px rgba(0,0,0,0.06); transition: transform .2s, box-shadow .2s; }
+  .coach-card:hover { transform: translateY(-3px); box-shadow:0 10px 18px rgba(0,0,0,0.1); }
+  .coach-card img { width: 120px; height:120px; border-radius: 50%; display:block; margin:6px auto 10px; }
+  .coach-title { font-weight:700; color:#b74387; margin-bottom:6px; }
+  .coach-desc { font-size:13px; color:#666; min-height: 3.2em; }
+
+  /* バッジ棚 */
+  .badge-shelf {
+    margin:18px auto 8px;
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px,1fr));
+    gap:8px;
+  }
+  .badge {
+    border:1px dashed rgba(208,107,160,0.3);
+    border-radius:12px;
+    padding:8px;
+    font-size:12px;
+    color:#bba7b4;
+    min-height:68px;
+  }
+  .badge.unlocked {
+    border-style:solid;
+    background:#fff9fd;
+    color:#c65e97;
+    box-shadow:0 4px 10px rgba(208,107,160,0.12);
+  }
+  .badge .badge-icon { font-size:20px; }
+  .badge .badge-label { font-weight:600; margin-top:4px; }
+
+  /* ログボード */
+  .log-board {
+    text-align:left;
+    margin-top:14px;
+    background:#fdf7ff;
+    border:1px solid rgba(208,107,160,0.25);
+    border-radius:14px;
+    padding:12px;
+    max-height:200px;
+    overflow:auto;
+  }
+  .log-title {
+    font-size:13px;
+    color:#a34f84;
+    margin-bottom:8px;
+    font-weight:600;
+  }
+  .log-entry {
+    padding:6px 0;
+    border-bottom:1px dashed rgba(0,0,0,0.07);
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    font-size:13px;
+  }
+  .log-entry:last-child { border-bottom:none; }
+  .log-month { font-weight:600; color:#c65e97; }
+  .log-choice { flex:1; }
+  .log-delta { color:#5e7a2f; font-size:12px; white-space:nowrap; }
+
+  /* ミッションボード */
+  .mission-board {
+    margin:18px auto 0;
+    padding:14px;
+    border-radius:16px;
+    background:#f2f8ff;
+    border:1px solid rgba(118,139,255,0.3);
+    text-align:left;
+  }
+  .mission-title {
+    font-weight:700;
+    font-size:15px;
+    color:#5c6fd8;
+    margin-bottom:4px;
+  }
+  .mission-desc {
+    font-size:13px;
+    color:#566178;
+    margin-bottom:10px;
+  }
+  .mission-progress {
+    font-size:12px;
+    color:#334155;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+  }
+  .mission-progress-bar {
+    height:8px;
+    border-radius:999px;
+    background:#dfe6ff;
+    overflow:hidden;
+  }
+  .mission-progress-fill {
+    display:block;
+    height:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg,#768bff,#b6c3ff);
+    width:0%;
+    transition:width 0.4s ease;
+  }
+  .mission-tags {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    font-size:11px;
+  }
+  .mission-tags span {
+    background:#fff;
+    border:1px solid rgba(118,139,255,0.3);
+    border-radius:999px;
+    padding:2px 10px;
+  }
+  .mission-reward {
+    font-size:12px;
+    color:#4c5aa9;
+    margin-top:8px;
+  }
+
+  /* トースト */
+  .toast {
+    position:fixed;
+    left:50%;
+    top:20px;
+    transform:translate(-50%,-20px);
+    background:rgba(255,255,255,0.95);
+    border-radius:14px;
+    padding:12px 18px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.18);
+    border:1px solid rgba(208,107,160,0.3);
+    opacity:0;
+    pointer-events:none;
+    transition: all 0.3s ease;
+    z-index:99;
+    font-weight:600;
+  }
+  .toast.visible {
+    opacity:1;
+    transform:translate(-50%,0);
+  }
+
+  .hidden { display:none !important; }
+
+  /* ストーリーモーダル */
+  .modal-overlay {
+    position:fixed;
+    inset:0;
+    background:rgba(10,7,25,0.68);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.3s ease;
+    z-index:90;
+  }
+  .modal-overlay.visible {
+    opacity:1;
+    pointer-events:auto;
+  }
+  .story-modal {
+    width:min(90vw,640px);
+    background:linear-gradient(135deg,#181533,#2b2159);
+    border-radius:24px;
+    padding:24px;
+    color:#f8e9ff;
+    box-shadow:0 20px 40px rgba(0,0,0,0.4);
+  }
+  .story-header {
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:0.05em;
+    color:#a78bfa;
+    margin-bottom:12px;
+    text-transform:uppercase;
+  }
+  .story-text {
+    font-size:16px;
+    line-height:1.7;
+    min-height:120px;
+    border-radius:16px;
+    padding:16px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.07);
+  }
+  .story-navigation {
+    display:flex;
+    justify-content:flex-end;
+    margin-top:18px;
+    gap:10px;
+  }
+  .story-navigation button {
+    background:linear-gradient(120deg,#a855f7,#ec4899);
+    border:none;
+    border-radius:12px;
+    color:#fff;
+    font-size:14px;
+    padding:10px 18px;
+    cursor:pointer;
+  }
+  .story-navigation button.secondary {
+    background:rgba(255,255,255,0.12);
+  }
+
+  /* 対話モーダル */
+  .dialogue-window {
+    width:min(90vw,620px);
+    background:#ffffff;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.25);
+    color:#333;
+  }
+  .dialogue-title {
+    font-weight:700;
+    font-size:16px;
+    color:#c65e97;
+    margin-bottom:10px;
+  }
+  .dialogue-list {
+    max-height:260px;
+    overflow:auto;
+    margin-bottom:14px;
+  }
+  .dialogue-line {
+    margin-bottom:12px;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+  .dialogue-speaker {
+    font-weight:700;
+    min-width:70px;
+    font-size:13px;
+    color:#a34f84;
+  }
+  .dialogue-text {
+    flex:1;
+    background:#fdf4ff;
+    border-radius:12px;
+    padding:10px 12px;
+    border:1px solid rgba(198,94,151,0.2);
+    font-size:14px;
+    line-height:1.5;
+  }
+  .dialogue-actions {
+    text-align:right;
+  }
+  .dialogue-actions button {
+    background:linear-gradient(120deg,#f472b6,#fb7185);
+    color:#fff;
+    border:none;
+    border-radius:12px;
+    padding:10px 20px;
+    font-size:14px;
+    cursor:pointer;
+  }
+
+  /* 目標インジケーター */
+  .goal-indicator {
+    margin:8px 0 14px;
+    background:#fff9fd;
+    border:1px solid rgba(198,94,151,0.25);
+    border-radius:14px;
+    padding:10px;
+    font-size:13px;
+    color:#8a4c79;
+  }
+  .goal-indicator strong { color:#c65e97; }
+  .goal-progress-row {
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    margin-top:4px;
+  }
+  .goal-progress-row span:last-child { color:#555; }
+
+  /* 目標設定モーダル */
+  .goal-modal {
+    width:min(90vw,640px);
+    background:#fff;
+    border-radius:26px;
+    padding:24px;
+    text-align:left;
+    box-shadow:0 30px 40px rgba(0,0,0,0.2);
+  }
+  .goal-modal h3 {
+    margin-top:0;
+    color:#c65e97;
+  }
+  .goal-form {
+    display:grid;
+    gap:12px;
+    margin-top:12px;
+  }
+  .goal-field {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border:1px solid rgba(198,94,151,0.25);
+    border-radius:12px;
+    padding:10px;
+    background:#fff6fb;
+  }
+  .goal-field label {
+    min-width:100px;
+    font-weight:600;
+    color:#a34f84;
+  }
+  .goal-field input {
+    flex:1;
+    padding:8px;
+    border-radius:8px;
+    border:1px solid rgba(0,0,0,0.1);
+    font-size:14px;
+  }
+  .goal-actions {
+    margin-top:16px;
+    text-align:right;
+  }
+  .goal-actions button {
+    border:none;
+    border-radius:12px;
+    padding:10px 18px;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .goal-actions .secondary {
+    background:#f0edf5;
+    color:#555;
+    margin-right:10px;
+  }
+  .goal-actions .primary {
+    background:linear-gradient(120deg,#f472b6,#fb7185);
+    color:#fff;
+  }
+  .goal-explain {
+    margin-top:14px;
+    background:#fff5fa;
+    border:1px solid rgba(198,94,151,0.2);
+    border-radius:14px;
+    padding:12px;
+    font-size:13px;
+    color:#74405f;
+  }
+  .goal-explain strong { display:block; margin-bottom:6px; color:#c65e97; }
+  .goal-explain ul { padding-left:18px; margin:0; }
+  .goal-explain li { margin:4px 0; }
+  .goal-question-title {
+    font-weight:700;
+    color:#c65e97;
+    margin-bottom:6px;
+  }
+  .goal-option-list {
+    display:grid;
+    gap:10px;
+    margin:12px 0;
+  }
+  .goal-option-list button {
+    width:100%;
+    text-align:left;
+    border-radius:12px;
+    border:1px solid rgba(198,94,151,0.35);
+    background:#fff;
+    color:#7a3e61;
+    padding:10px 14px;
+    font-size:14px;
+  }
+  .goal-option-list button.selected {
+    border:2px solid var(--accent);
+    background:rgba(208,107,160,0.08);
+    color:#4b1f34;
+  }
+  .goal-summary {
+    background:#fff9fd;
+    border:1px solid rgba(198,94,151,0.25);
+    border-radius:16px;
+    padding:14px;
+    margin-top:12px;
+  }
+  .goal-summary h4 {
+    margin:0 0 8px;
+    color:#c65e97;
+  }
+  .goal-summary-list {
+    list-style:none;
+    padding:0;
+    margin:0 0 8px;
+  }
+  .goal-summary-list li {
+    margin:4px 0;
+    color:#62364f;
+  }
+  .goal-tags {
+    list-style:none;
+    padding:0;
+    margin:6px 0 0;
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    font-size:12px;
+  }
+  .goal-tags li {
+    background:#fff;
+    border:1px solid rgba(198,94,151,0.3);
+    border-radius:999px;
+    padding:2px 8px;
+  }
+  .goal-actions .text-link {
+    border:none;
+    background:none;
+    color:#a34f84;
+    text-decoration:underline;
+    font-size:13px;
+    margin-right:auto;
+    padding:0;
+    cursor:pointer;
+  }
+  .review-window {
+    width:min(90vw,650px);
+    background:#fffdfc;
+    border-radius:22px;
+    padding:20px;
+    box-shadow:0 24px 48px rgba(0,0,0,0.25);
+    text-align:left;
+    border:1px solid rgba(208,107,160,0.2);
+  }
+  .review-title {
+    font-size:18px;
+    font-weight:700;
+    color:#c34781;
+  }
+  .review-subtitle {
+    font-size:13px;
+    color:#666;
+    margin-bottom:12px;
+  }
+  .review-metrics {
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .review-metric {
+    background:#fff9fd;
+    border-radius:14px;
+    border:1px solid rgba(198,94,151,0.2);
+    padding:10px;
+    font-size:13px;
+    color:#633548;
+  }
+  .review-metric strong {
+    display:block;
+    color:#c65e97;
+    font-size:15px;
+  }
+  .review-list {
+    list-style:none;
+    padding:0;
+    margin:0;
+    font-size:13px;
+    color:#463442;
+  }
+  .review-list li {
+    padding:6px 0;
+    border-bottom:1px dashed rgba(0,0,0,0.08);
+  }
+  .review-list li:last-child {
+    border-bottom:none;
+  }
+  .review-feedback {
+    margin-top:12px;
+    background:#fff2f6;
+    border:1px solid rgba(201,77,120,0.3);
+    border-radius:16px;
+    padding:12px;
+    font-size:13px;
+    color:#5a243c;
+    line-height:1.6;
+  }
+  .review-feedback strong {
+    color:#c02f5c;
+  }
+  .intro-window {
+    width:min(90vw,640px);
+    background:#fff;
+    border-radius:24px;
+    padding:20px;
+    text-align:left;
+    box-shadow:0 24px 48px rgba(0,0,0,0.25);
+    border:1px solid rgba(208,107,160,0.25);
+  }
+  .intro-header {
+    display:flex;
+    gap:16px;
+    align-items:center;
+    margin-bottom:12px;
+  }
+  .intro-avatar {
+    width:86px;
+    height:86px;
+    border-radius:24px;
+    overflow:hidden;
+    background:#fff5fb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid rgba(208,107,160,0.2);
+  }
+  .intro-avatar img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  .intro-coach-name {
+    font-size:18px;
+    font-weight:700;
+    color:#c34781;
+  }
+  .intro-coach-desc {
+    font-size:13px;
+    color:#5d3750;
+  }
+  .intro-points {
+    margin:0;
+    padding:0;
+    list-style:none;
+    display:grid;
+    gap:10px;
+    margin-top:14px;
+  }
+  .intro-points li {
+    background:#fff9fd;
+    border-radius:14px;
+    border:1px solid rgba(198,94,151,0.2);
+    padding:12px;
+  }
+  .intro-points h4 {
+    margin:0 0 4px;
+    font-size:14px;
+    color:#a3346a;
+  }
+  .intro-body {
+    font-size:13px;
+    color:#4c3341;
+    line-height:1.6;
+  }
+  .quiz-window {
+    width:min(90vw,620px);
+    background:#ffffff;
+    border-radius:24px;
+    padding:22px;
+    box-shadow:0 24px 48px rgba(0,0,0,0.3);
+    text-align:left;
+  }
+  .quiz-title {
+    font-size:17px;
+    font-weight:700;
+    color:#5c358a;
+  }
+  .quiz-question {
+    margin:8px 0 14px;
+    font-size:15px;
+    color:#2f1f3c;
+    line-height:1.5;
+  }
+  .quiz-options {
+    display:grid;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .quiz-options button {
+    border-radius:14px;
+    border:1px solid rgba(92,53,138,0.3);
+    padding:12px;
+    text-align:left;
+    font-size:14px;
+    background:#f8f5ff;
+    color:#2f1f3c;
+    cursor:pointer;
+  }
+  .quiz-options button.correct {
+    border-color:#28a745;
+    background:#edfff4;
+  }
+  .quiz-options button.incorrect {
+    border-color:#d93052;
+    background:#fff0f3;
+  }
+  .quiz-feedback {
+    min-height:48px;
+    font-size:13px;
+    color:#4c1f37;
+    margin-bottom:10px;
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <header class="game-header float-animation">
-            <h1 class="game-title">🏰 マネークエスト 🏰</h1>
-            <p class="game-subtitle">〜お金の王国を冒険して投資の知識を身につけよう〜</p>
-        </header>
-
-        <div class="status-bar">
-            <div class="status-item">
-                <div class="status-value" id="goldAmount">1000</div>
-                <div class="status-label">💰 ゴールド</div>
-            </div>
-            <div class="status-item">
-                <div class="status-value" id="playerLevel">1</div>
-                <div class="status-label">⭐ レベル</div>
-            </div>
-            <div class="status-item">
-                <div class="status-value" id="playerExp">0</div>
-                <div class="status-label">✨ 経験値</div>
-            </div>
-            <div class="status-item">
-                <div class="status-value" id="currentArea">お金の王国</div>
-                <div class="status-label">🗺️ 現在地</div>
-            </div>
-        </div>
-
-        <main class="game-area">
-            <div id="worldMap" class="world-map">
-                <div class="area-card pulse-animation" onclick="enterArea('stocks')">
-                    <span class="area-icon">🌲</span>
-                    <h3 class="area-name">株の森</h3>
-                    <p class="area-description">株式投資の基本を学べる神秘的な森。賢者フクロウが投資の心得を教えてくれます。</p>
-                </div>
-                
-                <div class="area-card pulse-animation" onclick="enterArea('insurance')">
-                    <span class="area-icon">🏔️</span>
-                    <h3 class="area-name">保険の洞窟</h3>
-                    <p class="area-description">リスクに備える保険の知識が眠る洞窟。ドラゴンが保険の重要性を説いてくれます。</p>
-                </div>
-                
-                <div class="area-card pulse-animation" onclick="enterArea('pension')">
-                    <span class="area-icon">🗼</span>
-                    <h3 class="area-name">年金の塔</h3>
-                    <p class="area-description">老後の備えについて学べる高い塔。賢者が年金制度の仕組みを解説してくれます。</p>
-                </div>
-            </div>
-
-
-            <div id="quizSection" class="quiz-section">
-                <div class="character-dialogue">
-                    <div class="character-name" id="characterName">案内人</div>
-                    <div class="character-text" id="characterDialogue">
-                        ようこそ、勇敢な冒険者よ！お金の王国へようこそ。
-                    </div>
-                </div>
-
-                <div id="quizContent">
-                    <h3 class="quiz-question" id="questionText"></h3>
-                    <div class="quiz-options" id="optionsContainer"></div>
-                </div>
-
-                <div id="resultMessage" class="result-message hidden"></div>
-
-                <div class="action-buttons">
-                    <button class="btn btn-primary" id="nextButton" onclick="nextQuestion()" style="display: none;">次の問題へ</button>
-                    <button class="btn" onclick="returnToMap()">マップに戻る</button>
-                </div>
-            </div>
-        </main>
+<h1>💖 マネーライフストーリー 💰 <span class="pill">eラーニング体験（音声なし）</span></h1>
+<div id="game">
+  <div id="status" class="status"></div>
+  <div id="chapterBanner" class="chapter-banner"></div>
+  <div id="goalIndicator" class="goal-indicator hidden"></div>
+  <div class="meters">
+    <div class="meter">
+      <div class="meter-label">💵 所持金</div>
+      <div class="meter-bar"><span id="moneyFill" class="meter-fill"></span></div>
+      <div class="meter-value" id="moneyValue"></div>
     </div>
+    <div class="meter">
+      <div class="meter-label">💖 幸福度</div>
+      <div class="meter-bar"><span id="happyFill" class="meter-fill"></span></div>
+      <div class="meter-value" id="happyValue"></div>
+    </div>
+  </div>
+  <div id="event"></div>
+  <div id="choices" class="row"></div>
+  <div id="coach" class="coach-box"></div>
+  <div id="badgeShelf" class="badge-shelf"></div>
+  <div id="missionBoard" class="mission-board hidden"></div>
+  <div id="log" class="log-board">
+    <div class="log-title">Decision Log</div>
+    <p style="margin:0; font-size:12px; color:#777;">まだ選択が記録されていません。</p>
+  </div>
+</div>
+<p class="note">※ まずコーチを選択してください（所要約7〜10分）。画像は差し替え可能です。</p>
+<div id="toast" class="toast"></div>
+<div id="storyOverlay" class="modal-overlay">
+  <div class="story-modal">
+    <div class="story-header" id="storyChapter"></div>
+    <div class="story-text" id="storyText"></div>
+    <div class="mission-reward" id="storyMissionHint"></div>
+    <div class="story-navigation">
+      <button id="storySkip" class="secondary">スキップ</button>
+      <button id="storyNext">次へ</button>
+    </div>
+  </div>
+</div>
+<div id="dialogueOverlay" class="modal-overlay">
+  <div class="dialogue-window">
+    <div class="dialogue-title">コーチとの対話</div>
+    <div id="dialogueList" class="dialogue-list"></div>
+    <div class="dialogue-actions">
+      <button id="dialogueNext">次の月へ</button>
+    </div>
+  </div>
+</div>
+<div id="goalOverlay" class="modal-overlay">
+  <div class="goal-modal">
+    <h3>🎯 新年のハート＆マネー目標</h3>
+    <p style="color:#555; margin-bottom:10px;">コーチと短い対話をして、今年の“守り”と“余白”を一緒に設計しましょう。</p>
+    <div id="goalConversation">
+      <div id="goalQuestionTitle" class="goal-question-title"></div>
+      <p id="goalQuestionText"></p>
+      <div id="goalOptions" class="goal-option-list"></div>
+      <div id="goalCoachNote" class="goal-explain"></div>
+    </div>
+    <div id="goalSummaryView" class="goal-summary hidden"></div>
+    <div id="goalManualForm" class="goal-form hidden">
+      <div class="goal-field">
+        <label for="manualGoalMoney">💵 所持金</label>
+        <input type="number" id="manualGoalMoney" min="20000" step="1000">
+        <span>円を目指す</span>
+      </div>
+      <div class="goal-field">
+        <label for="manualGoalHappy">💖 幸福度</label>
+        <input type="number" id="manualGoalHappy" min="50" max="100">
+        <span>をキープ/達成</span>
+      </div>
+    </div>
+    <div class="goal-actions" id="goalWizardActions">
+      <button type="button" class="text-link" id="goalSkip">あとで決める</button>
+      <button type="button" class="secondary" id="goalBackStep">戻る</button>
+      <button type="button" class="primary" id="goalNextStep">次へ</button>
+    </div>
+    <div class="goal-actions hidden" id="goalSummaryActions">
+      <button type="button" class="secondary" id="goalManualToggle">別の値にする</button>
+      <button type="button" class="primary" id="goalAcceptRecommendation">この提案で冒険開始</button>
+    </div>
+    <div class="goal-actions hidden" id="goalManualActions">
+      <button type="button" class="secondary" id="goalManualBack">提案に戻る</button>
+      <button type="button" class="primary" id="goalManualConfirm">入力した値で進む</button>
+    </div>
+  </div>
+</div>
+<div id="reviewOverlay" class="modal-overlay">
+  <div class="review-window">
+    <div class="review-title" id="reviewTitle"></div>
+    <div class="review-subtitle" id="reviewSubtitle"></div>
+    <div class="review-metrics">
+      <div class="review-metric">
+        <strong id="reviewMoneySummary">--</strong>
+        <span>所持金の推移</span>
+      </div>
+      <div class="review-metric">
+        <strong id="reviewHappySummary">--</strong>
+        <span>幸福度の推移</span>
+      </div>
+      <div class="review-metric">
+        <strong id="reviewTagSummary">--</strong>
+        <span>よく選んだテーマ</span>
+      </div>
+    </div>
+    <div>
+      <div style="font-weight:600; color:#a34f84; margin-bottom:4px;">ハイライト</div>
+      <ul class="review-list" id="reviewHighlightList"></ul>
+    </div>
+    <div class="review-feedback" id="reviewFeedbackBox"></div>
+    <div class="goal-actions" style="text-align:right; margin-top:14px;">
+      <button type="button" class="primary" id="reviewCloseButton">次の半年へ進む</button>
+    </div>
+  </div>
+</div>
+<div id="coachIntroOverlay" class="modal-overlay">
+  <div class="intro-window">
+    <div class="intro-header">
+      <div class="intro-avatar"><img id="coachIntroAvatar" src="" alt=""></div>
+      <div>
+        <div class="intro-coach-name" id="coachIntroName"></div>
+        <div class="intro-coach-desc" id="coachIntroDesc"></div>
+      </div>
+    </div>
+    <div class="intro-body" id="coachIntroOpening"></div>
+    <ul class="intro-points" id="coachIntroPoints"></ul>
+    <div class="goal-actions" style="text-align:right; margin-top:10px;">
+      <button type="button" class="primary" id="coachIntroContinue">数字の約束へ進む</button>
+    </div>
+  </div>
+</div>
+<div id="quizOverlay" class="modal-overlay">
+  <div class="quiz-window">
+    <div class="quiz-title" id="quizTitle"></div>
+    <div class="quiz-question" id="quizQuestion"></div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-feedback" id="quizFeedback"></div>
+    <div class="goal-actions" style="text-align:right;">
+      <button type="button" class="primary" id="quizContinue" disabled>次へ進む</button>
+    </div>
+  </div>
+</div>
+<script>
+const chapterInfo = [
+  { label: 'Chapter 1: Spring Reset', sub: '習慣を整えて土台をつくる' },
+  { label: 'Chapter 2: Summer Drive', sub: '挑戦と経験値を重ねる季節' },
+  { label: 'Chapter 3: Autumn Balance', sub: '攻守のバランス再調整' },
+  { label: 'Chapter 4: Winter Celebration', sub: '1年の成果を味わう' },
+  { label: 'Chapter 5: Renewal Sprint', sub: '2年目の春、戦略を磨き直す' },
+  { label: 'Chapter 6: Collaboration Bloom', sub: '人とのつながりで挑戦を広げる' },
+  { label: 'Chapter 7: Legacy Autumn', sub: '守りと継承を意識する季節' },
+  { label: 'Chapter 8: Vision Winter', sub: '未来の青写真を描き切る' }
+];
 
-    <script>
-        let gameState = {
-            gold: 1000,
-            level: 1,
-            exp: 0,
-            currentArea: 'map',
-            currentQuestionIndex: 0,
-            currentAreaQuestions: []
-        };
+const seasonThemes = [
+  { gradient: 'linear-gradient(135deg, #f9e0e9, #d8e9f0)', accent:'#d06ba0', soft:'#fbd5b5' },
+  { gradient: 'linear-gradient(135deg, #ffe0d2, #fff1c9)', accent:'#ff8a5c', soft:'#ffd0a7' },
+  { gradient: 'linear-gradient(135deg, #e6eeff, #f3e1ff)', accent:'#768bff', soft:'#c7d1ff' },
+  { gradient: 'linear-gradient(135deg, #f5e7ff, #e0f7ff)', accent:'#a05cd0', soft:'#d3b3f7' },
+  { gradient: 'linear-gradient(135deg, #fff5da, #ffe0eb)', accent:'#ff8ab8', soft:'#ffd6e8' },
+  { gradient: 'linear-gradient(135deg, #e1ffe4, #d6f4ff)', accent:'#2fb285', soft:'#7adde9' },
+  { gradient: 'linear-gradient(135deg, #ffe8d6, #ffeacd)', accent:'#e07a5f', soft:'#f2cc8f' },
+  { gradient: 'linear-gradient(135deg, #ede9fe, #d7efff)', accent:'#6d6de8', soft:'#a5b4fc' }
+];
 
-        const gameData = {
-            stocks: {
-                name: '株の森',
-                character: '🦉 フクロウ賢者',
-                questions: [
-                    {
-                        question: '株式投資における「分散投資」の最大のメリットは何でしょうか？',
-                        options: [
-                            'より多くの利益を得られる',
-                            'リスクを軽減できる',
-                            '手数料が安くなる',
-                            '必ず利益が出る'
-                        ],
-                        correct: 1,
-                        explanation: '分散投資は、複数の銘柄に投資することでリスクを分散し、一つの投資先が下がっても全体への影響を小さくできるのが最大のメリットです。'
-                    },
-                    {
-                        question: '株価が下がった時の正しい心構えは？',
-                        options: [
-                            'すぐに売却する',
-                            '慌てずに状況を分析する',
-                            'より多く買い増しする',
-                            '投資をやめる'
-                        ],
-                        correct: 1,
-                        explanation: '株価の変動は自然なことです。重要なのは感情的にならず、企業の fundamentals や市場の状況を冷静に分析することです。'
-                    },
-                    {
-                        question: '長期投資の最大のメリットは？',
-                        options: [
-                            '短期間で大きな利益が得られる',
-                            '複利効果を活用できる',
-                            '毎日売買する必要がない',
-                            '絶対に損をしない'
-                        ],
-                        correct: 1,
-                        explanation: '長期投資では複利効果により、利益が利益を生む効果で資産が指数関数的に成長する可能性があります。時間を味方につけることが重要です。'
-                    }
-                ]
-            },
-            insurance: {
-                name: '保険の洞窟',
-                character: '🐉 ドラゴン・プロテクト',
-                questions: [
-                    {
-                        question: '生命保険の主な目的は何でしょうか？',
-                        options: [
-                            '投資で利益を得ること',
-                            '家族の生活を守ること',
-                            '税金を安くすること',
-                            'お金を貯めること'
-                        ],
-                        correct: 1,
-                        explanation: '生命保険の最も重要な目的は、万が一の事態が起きた時に残された家族の生活を経済的に支えることです。'
-                    },
-                    {
-                        question: '医療保険を選ぶ際に最も重要なポイントは？',
-                        options: [
-                            '保険料の安さ',
-                            '保障内容の充実度',
-                            '会社の知名度',
-                            '営業担当者の人柄'
-                        ],
-                        correct: 1,
-                        explanation: '医療保険では、自分に必要な保障がきちんとカバーされているかが最重要です。価格だけでなく内容をしっかり確認しましょう。'
-                    },
-                    {
-                        question: '自動車保険の「対人賠償」とは何を保障するもの？',
-                        options: [
-                            '自分の車の修理費',
-                            '他人にケガをさせた時の賠償',
-                            '自分のケガの治療費',
-                            '盗難された時の補償'
-                        ],
-                        correct: 1,
-                        explanation: '対人賠償保険は、事故で他人にケガをさせてしまった場合の治療費や慰謝料などを補償します。とても重要な保障です。'
-                    }
-                ]
-            },
-            pension: {
-                name: '年金の塔',
-                character: '🧙‍♂️ 年金マスター',
-                questions: [
-                    {
-                        question: '国民年金の加入義務があるのは何歳から何歳まででしょうか？',
-                        options: [
-                            '18歳から65歳まで',
-                            '20歳から60歳まで',
-                            '25歳から65歳まで',
-                            '20歳から65歳まで'
-                        ],
-                        correct: 1,
-                        explanation: '国民年金は20歳から60歳までの40年間の加入が義務付けられています。この期間にしっかり保険料を納めることが大切です。'
-                    },
-                    {
-                        question: 'iDeCo（個人型確定拠出年金）の最大のメリットは？',
-                        options: [
-                            '元本が保証されている',
-                            '掛金が全額所得控除になる',
-                            '自由に引き出せる',
-                            '政府が運用してくれる'
-                        ],
-                        correct: 1,
-                        explanation: 'iDeCoの掛金は全額所得控除の対象となるため、所得税や住民税が軽減される大きなメリットがあります。'
-                    },
-                    {
-                        question: '年金の「2階建て」構造とは？',
-                        options: [
-                            '国民年金と厚生年金の組み合わせ',
-                            '国内年金と海外年金の組み合わせ',
-                            '基礎年金と応用年金の組み合わせ',
-                            '公的年金と民間年金の組み合わせ'
-                        ],
-                        correct: 0,
-                        explanation: '日本の年金制度は、1階部分が国民年金（基礎年金）、2階部分が厚生年金という2階建ての構造になっています。'
-                    }
-                ]
-            }
-        };
+const badgeCatalog = [
+  { id:'investor', icon:'📈', title:'投資デビュー', desc:'投資または海外投資に挑戦した' },
+  { id:'wellness', icon:'💪', title:'ウェルネス番長', desc:'健康関連を継続した' },
+  { id:'planner', icon:'🗂️', title:'設計図マスター', desc:'計画・節約を積み上げた' },
+  { id:'globetrotter', icon:'🌍', title:'ワールドマネー', desc:'海外投資を本格化させた' },
+  { id:'harmony', icon:'🌈', title:'ハピネス70+', desc:'幸福度70を突破した' }
+];
 
-        function updateDisplay() {
-            const goldElement = document.getElementById('goldAmount');
-            goldElement.textContent = gameState.gold;
-            
-            
-            document.getElementById('playerLevel').textContent = gameState.level;
-            document.getElementById('playerExp').textContent = gameState.exp;
-            document.getElementById('currentArea').textContent = 
-                gameState.currentArea === 'map' ? 'お金の王国' : gameData[gameState.currentArea]?.name || 'お金の王国';
-        }
+const statImportance = [
+  {
+    key: 'money',
+    title: '💵 所持金 = 守りと挑戦の燃料',
+    text: '生活防衛費を守りながら、挑戦資金を切り分けることで「安心して攻める」状態を作れる。感情ではなく設計で動けるように、まず現金の厚みを決めよう。'
+  },
+  {
+    key: 'happy',
+    title: '💖 幸福度 = 意思決定の質',
+    text: '睡眠・食・ご褒美などの余白が削られると判断力が急降下。幸福度の目標を先に決めて、数字と同じくらい大事に扱うと、挑戦が長続きする。'
+  }
+];
 
-        function enterArea(areaId) {
-            gameState.currentArea = areaId;
-            gameState.currentAreaQuestions = [...gameData[areaId].questions];
-            gameState.currentQuestionIndex = 0;
-            
-            document.getElementById('worldMap').style.display = 'none';
-            document.getElementById('quizSection').style.display = 'block';
-            
-            document.getElementById('characterName').textContent = gameData[areaId].character;
-            document.getElementById('characterDialogue').textContent = 
-                `${gameData[areaId].name}へようこそ！ここでは${areaId === 'stocks' ? '株式投資' : areaId === 'insurance' ? '保険' : '年金'}について学べます。準備はよろしいですか？`;
-            
-            showQuestion();
-            updateDisplay();
-        }
+const seminarQuizBankYear1 = [
+  {
+    title: 'NISAセミナー復習クイズ',
+    question: 'つみたて投資で意識すべき「長期・分散・低コスト」のうち、最も自分でコントロールしやすいのは？',
+    choices: [
+      { label:'相場のタイミングを完璧に読むこと', correct:false, happy:-4, feedback:'相場は読めない前提。読もうとするほど心もお金も削られちゃう。' },
+      { label:'保有銘柄の分散数を毎月変えること', correct:false, happy:-3, feedback:'分散は大切だけど、数をいじり続けるのはリスク管理がブレやすい。' },
+      { label:'コストの低い商品を選び続けること', correct:true, happy:5, feedback:'手数料は自分で選べる唯一の確定要素。低コストは長期で効く複利だよ。' }
+    ],
+    explanation: '相場を読むより、コストコントロールが再現性の高いリターン向上策。'
+  },
+  {
+    title: '保険セミナー復習クイズ',
+    question: '「守り」を整えるとき、最初に見直すべきなのは？',
+    choices: [
+      { label:'貯蓄型保険をすぐ解約して現金化する', correct:false, happy:-4, feedback:'焦って解約すると元本割れのリスク。まずは全体設計を確認しよう。' },
+      { label:'保障の重複や過剰な特約がないかチェックする', correct:true, happy:4, feedback:'必要保障額と生活防衛費のバランスを見直すのが“守り”の第一歩。' },
+      { label:'投資枠を増やしてリスクを取る', correct:false, happy:-5, feedback:'守りの話から攻めに逃げると、結局どちらも中途半端になるよ。' }
+    ],
+    explanation: '保険は目的ごとの過不足をチェック→余剰は攻めへ、足りなければ補うのがセオリー。'
+  },
+  {
+    title: 'キャッシュフローセミナー復習クイズ',
+    question: '家計のキャッシュフローを整える最初の一歩として有効なのは？',
+    choices: [
+      { label:'交際費など変動費を月ごとに最適化する', correct:false, happy:-3, feedback:'変動費の最適化は大事だけど、まずは土台の固定費からが鉄則。' },
+      { label:'固定費と目的別口座を仕分ける', correct:true, happy:4, feedback:'お金の流れを目的別に分けると「迷い」なくキャッシュが回るようになるよ。' },
+      { label:'クレジットカードをすべて解約する', correct:false, happy:-4, feedback:'必要な仕組みまで壊すと利便性も管理も悪化しがち。' }
+    ],
+    explanation: '固定費・目的別の仕組み化でキャッシュフローを見える化し、挑戦資金を確保しやすくなる。'
+  },
+  {
+    title: 'メンタルマネー講座クイズ',
+    question: '幸福度が落ちてきたときに見直すべき優先アクションは？',
+    choices: [
+      { label:'投資額をすぐ増やして気分を上げる', correct:false, happy:-5, feedback:'感情で攻めるとリスクが跳ね上がる。まずは心の余白を整えよう。' },
+      { label:'休息とご褒美の具体的な予定をカレンダーに入れる', correct:true, happy:5, feedback:'幸福度を数値化し、余白を“予定化”することで判断力も戻るよ。' },
+      { label:'とにかく仕事量を増やして忘れる', correct:false, happy:-4, feedback:'逃避で詰め込むと燃え尽きが加速するだけ。' }
+    ],
+    explanation: '幸福度＝意思決定の質。ご褒美・休息をスケジュールに組み込み、仕組みで回復を確保しよう。'
+  }
+];
 
-        function showQuestion() {
-            const area = gameData[gameState.currentArea];
-            const question = area.questions[gameState.currentQuestionIndex];
-            
-            document.getElementById('questionText').textContent = question.question;
-            
-            const optionsContainer = document.getElementById('optionsContainer');
-            optionsContainer.innerHTML = '';
-            
-            question.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.className = 'quiz-option';
-                button.textContent = option;
-                button.onclick = () => answerQuestion(index);
-                optionsContainer.appendChild(button);
-            });
-            
-            document.getElementById('resultMessage').classList.add('hidden');
-            document.getElementById('nextButton').style.display = 'none';
-        }
+const seminarQuizBankYear2 = [
+  {
+    title: '海外投資アップデートクイズ',
+    question: '為替リスクに備えつつ海外ETFへ投資する際、はじめに意識すべきポイントは？',
+    choices: [
+      { label:'為替の値動きを予想して売買を繰り返す', correct:false, happy:-4, feedback:'頻繁な売買はコストとメンタル負荷が増すだけ。' },
+      { label:'投資比率と目的に合った通貨を決めておく', correct:true, happy:5, feedback:'目的別に通貨と比率を決めておくとブレない設計になるよ。' },
+      { label:'為替ヘッジ商品だけを持ち、他は排除する', correct:false, happy:-3, feedback:'ヘッジ一本だとコスト増＆柔軟性がなくなる。' }
+    ],
+    explanation: '「どの目的でいくら外貨に置くか」を決めた上で、ヘッジ有無や銘柄を選んでいく。'
+  },
+  {
+    title: 'コラボ副業セミナークイズ',
+    question: '仲間と副業を進めるとき、まず取り決めるべき重要事項は？',
+    choices: [
+      { label:'利益が出たらその場の気分で分配する', correct:false, happy:-4, feedback:'ルールがあいまいだと関係性が崩れやすい。' },
+      { label:'役割・時間・お金の分配ルールを文書化する', correct:true, happy:4, feedback:'数値と役割を明文化すると責任範囲が明確になるよ。' },
+      { label:'最初から大きな設備投資に踏み切る', correct:false, happy:-3, feedback:'小さく検証する原則を忘れるとリスク過多。' }
+    ],
+    explanation: '副業コラボは“数字と役割”を最初に可視化。決めないまま進むと感情トラブルに。'
+  },
+  {
+    title: 'レガシー設計クイズ',
+    question: '資産防衛と継承を考えるとき、最初に着手すると良いのは？',
+    choices: [
+      { label:'投資を全て解約して現金化する', correct:false, happy:-5, feedback:'極端な解約はチャンスを失うだけ。' },
+      { label:'家族内で資産一覧と意向を共有する', correct:true, happy:5, feedback:'資産の一覧と意向共有がレガシー設計のスタートライン。' },
+      { label:'保険や信託の契約をすぐに増やす', correct:false, happy:-3, feedback:'目的整理をせず契約を増やすとコスト過多。' }
+    ],
+    explanation: 'まず“見える化と共有”→必要なら専門家と設計。家族と話せる土台が最優先。'
+  }
+];
 
-        function answerQuestion(selectedIndex) {
-            const area = gameData[gameState.currentArea];
-            const question = area.questions[gameState.currentQuestionIndex];
-            const resultDiv = document.getElementById('resultMessage');
-            
-            const options = document.querySelectorAll('.quiz-option');
-            options.forEach(option => option.disabled = true);
-            
-            if (selectedIndex === question.correct) {
-                resultDiv.textContent = '正解！ ゴールドを獲得しました！';
-                resultDiv.className = 'result-message result-correct';
-                gameState.gold += 200;
-                gameState.exp += 100;
-                
-                if (gameState.exp >= gameState.level * 300) {
-                    gameState.level++;
-                    gameState.exp = 0;
-                    resultDiv.textContent += ' レベルアップしました！';
-                }
-            } else {
-                resultDiv.textContent = '不正解... ゴールドが減ってしまいました。';
-                resultDiv.className = 'result-message result-incorrect';
-                gameState.gold = Math.max(0, gameState.gold - 100);
-            }
-            
-            resultDiv.classList.remove('hidden');
-            
-            setTimeout(() => {
-                document.getElementById('characterDialogue').textContent = question.explanation;
-                document.getElementById('nextButton').style.display = 'inline-block';
-            }, 2000);
-            
-            updateDisplay();
-        }
+const tagLabels = {
+  save:'家計整理',
+  plan:'未来設計',
+  health:'ウェルネス',
+  invest:'投資',
+  overseas:'海外投資',
+  side:'副業・挑戦',
+  learn:'学び',
+  joy:'ご褒美',
+  rebalance:'リバランス',
+  protect:'守り',
+  wait:'待つ判断',
+  risk:'リスク',
+  rest:'整える'
+};
 
-        function nextQuestion() {
-            gameState.currentQuestionIndex++;
-            
-            if (gameState.currentQuestionIndex >= gameData[gameState.currentArea].questions.length) {
-                document.getElementById('characterDialogue').textContent = 
-                    `素晴らしい！${gameData[gameState.currentArea].name}のクエストをクリアしました！他のエリアも挑戦してみてください。`;
-                document.getElementById('quizContent').innerHTML = '<div style="text-align: center; padding: 40px;"><h2 style="color: #ffd700;">🎉 エリアクリア！ 🎉</h2><p>おめでとうございます！このエリアのすべての問題をクリアしました。</p></div>';
-                document.getElementById('nextButton').style.display = 'none';
-            } else {
-                showQuestion();
-            }
-        }
+const chapterStories = [
+  {
+    slides: [
+      { text: '年始の朝。あなたはコーチと温かなハーブティーを飲みながら、<br>「今年こそ、お金の土台を整えよう」と誓いました。' },
+      { text: '1〜3月は“暮らしのベースキャンプ期”。家計や健康の習慣づくりに注力し、<br>次の挑戦に備えることがテーマです。' }
+    ],
+    mission: {
+      id: 'foundation',
+      title: '暮らしの土台づくり',
+      desc: '節約・計画・健康のアクションを重ね、年間のベースを築こう。',
+      tags: ['save','plan','health'],
+      target: 2,
+      reward: {money: 3000, happy: 4 },
+      hint: '固定費や習慣を整える選択がゲージを進めます。'
+    }
+  },
+  {
+    slides: [
+      { text: '夏が近づくころ、街には新しい学びや副業のチャンスがあふれています。<br>コーチは「小さくても行動を重ねれば、経験値になるよ」と背中を押します。' },
+      { text: '4〜6月は“チャレンジドライブ期”。副収入づくりや投資のアップデートで、<br>自分の可能性を広げてみましょう。' }
+    ],
+    mission: {
+      id: 'drive',
+      title: '挑戦のギアを入れる',
+      desc: '副業・学び・投資を選び、ドキドキを行動に変えよう。',
+      tags: ['side','learn','invest'],
+      target: 2,
+      reward: {happy: 5 },
+      hint: '挑戦系の選択肢でゲージが伸びます。'
+    }
+  },
+  {
+    slides: [
+      { text: '秋風が吹く頃、資産配分やリスクの整備が気になり始めます。<br>コーチはライフプラン表を広げ、「ここで一度、作戦会議をしよう」と提案。' },
+      { text: '7〜9月は“バランス調整期”。守りと攻めのルールを再確認して、<br>揺らぎに強いポートフォリオを作り直します。' }
+    ],
+    mission: {
+      id: 'balance',
+      title: '攻守バランス会議',
+      desc: 'リバランス・守り・計画系の選択で、設計図を磨き直そう。',
+      tags: ['rebalance','protect','plan'],
+      target: 2,
+      reward: {money: 2000 },
+      hint: 'バランス系の選択でゲージが上昇。'
+    }
+  },
+  {
+    slides: [
+      { text: '冬のイルミネーションが灯るころ、1年の積み上げを振り返る時間がやってきました。<br>“何を守り、何に喜びを使う？”コーチとの対話が深まります。' },
+      { text: '10〜12月は“祝祭と設計の期”。ご褒美と計画をバランスさせ、<br>来年への布石を打ちながら1年を締めくくりましょう。' }
+    ],
+    mission: {
+      id: 'celebration',
+      title: '祝祭と次の設計',
+      desc: 'ご褒美・計画・守りの選択で、心地よい締めくくりを叶えよう。',
+      tags: ['joy','plan','protect'],
+      target: 2,
+      reward: {happy: 8 },
+      hint: '喜びや計画の選択でゲージが満ちます。'
+    }
+  },
+  {
+    slides: [
+      { text: '2年目の春。去年の学びを抱えて、新しい地図を描くタイミングが到来。<br>コーチは「ここから本番、戦略を磨こう」と微笑みます。' },
+      { text: '13〜15月は“戦略アップデート期”。積み上げた資産をどう育てるか、<br>広い視点で戦略を洗練させましょう。' }
+    ],
+    mission: {
+      id: 'renewal',
+      title: '戦略アップデート',
+      desc: '投資・海外・設計の選択で2年目の軌道を描こう。',
+      tags: ['invest','overseas','plan'],
+      target: 3,
+      reward: {money: 4000 },
+      hint: '資産運用や設計系の選択でゲージが伸びます。'
+    }
+  },
+  {
+    slides: [
+      { text: '初夏、仲間やコミュニティとのコラボの話題が増えてきました。<br>コーチは「人と繋がると、行動の幅は一気に広がるよ」と鼓舞します。' },
+      { text: '16〜18月は“コラボ挑戦期”。副業・学び・コミュニティ活動で<br>経験の幅を広げ、楽しみながらステップアップ。' }
+    ],
+    mission: {
+      id: 'collab',
+      title: 'コラボ挑戦',
+      desc: '副業・学び・喜びの選択で共創モードを作ろう。',
+      tags: ['side','learn','joy'],
+      target: 3,
+      reward: {happy: 6 },
+      hint: '人とのつながりを意識する選択肢で前進します。'
+    }
+  },
+  {
+    slides: [
+      { text: '秋を前に、守りと継承の話題が気になり始めました。<br>コーチは「未来の自分と大切な人たちへ、設計図を贈ろう」と語ります。' },
+      { text: '19〜21月は“レガシー調整期”。守りと攻めを再び整え、<br>家族やコミュニティを巻き込んだ設計に昇華していきます。' }
+    ],
+    mission: {
+      id: 'legacy',
+      title: 'レガシー調整',
+      desc: '守り・リバランス・計画の選択で、ブレない軌道を作ろう。',
+      tags: ['protect','rebalance','plan'],
+      target: 2,
+      reward: {money: 3000 },
+      hint: '守りや再設計の選択でゲージが進行。'
+    }
+  },
+  {
+    slides: [
+      { text: '2年目の冬。ふたたびイルミネーションが灯るなか、<br>あなたとコーチは「この先5年の青写真」を語り合います。' },
+      { text: '22〜24月は“ビジョン描写期”。ご褒美と投資のバランスを取りつつ、<br>次のステージへ続く物語を描き切りましょう。' }
+    ],
+    mission: {
+      id: 'vision',
+      title: 'ビジョン完成',
+      desc: '喜び・計画・投資の選択で、次章への青写真を完成させよう。',
+      tags: ['joy','plan','invest'],
+      target: 3,
+      reward: {happy: 10 },
+      hint: '締めくくりのご褒美や投資でゲージが満タンに。'
+    }
+  }
+];
 
-        function returnToMap() {
-            gameState.currentArea = 'map';
-            document.getElementById('worldMap').style.display = 'grid';
-            document.getElementById('quizSection').style.display = 'none';
-            updateDisplay();
-        }
+const unlockedBadges = new Set();
+const logEntries = [];
+let chapterIntroPlayed = chapterInfo.map(()=>false);
+let activeMission = null;
+let storyState = { active:false, chapterIndex:null, slide:0, onComplete:null };
+let dialogueState = { active:false, onClose:null };
+let awaitingDialogue = false;
+let goalPlan = null;
+// ===== コーチ画像（デフォルト：インラインSVGをdata URI化） =====
+const svg = (bg, face) => `data:image/svg+xml;utf8,` + encodeURIComponent(`
+  <svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'>
+    <defs>
+      <radialGradient id='g' cx='50%' cy='40%' r='70%'>
+        <stop offset='0%' stop-color='${bg}' stop-opacity='1'/>
+        <stop offset='100%' stop-color='${bg}' stop-opacity='0.85'/>
+      </radialGradient>
+    </defs>
+    <circle cx='60' cy='60' r='58' fill='url(#g)'/>
+    ${face}
+  </svg>`);
+const faceSoft = "<circle cx='60' cy='62' r='34' fill='#ffe7ef'/><circle cx='48' cy='56' r='5' fill='#b66e97'/><circle cx='72' cy='56' r='5' fill='#b66e97'/><path d='M45 72 C60 84, 75 84, 90 72' stroke='#d087b2' stroke-width='4' fill='none' stroke-linecap='round'/>";
+const faceSharp = "<circle cx='60' cy='62' r='34' fill='#e9f3ff'/><rect x='45' y='52' width='8' height='4' rx='2' fill='#4c6aa7'/><rect x='68' y='52' width='8' height='4' rx='2' fill='#4c6aa7'/><path d='M44 74 Q60 82 76 74' stroke='#5b79b6' stroke-width='4' fill='none' stroke-linecap='round'/>";
+const faceBright = "<circle cx='60' cy='62' r='34' fill='#fff6d9'/><circle cx='48' cy='56' r='6' fill='#d68b00'/><circle cx='72' cy='56' r='6' fill='#d68b00'/><path d='M45 73 Q60 88 75 73' stroke='#f0a600' stroke-width='4' fill='none' stroke-linecap='round'/>";
 
+// 画像URLを独自の写真に差し替えたい場合は、下記の src を上書きしてください
+const coachProfiles = {
+  mina: {
+    key: 'mina',
+    name: 'ミナ（ナチュラル）',
+    avatarSrc: "images/chara1.jpg",
+    desc: 'やさしく寄り添うコーチ。習慣づくりが得意。',
+    quotes: {
+      save:["“貯める力”は安心の土台ね。小さくても積み上げよう。", "固定費の見直しは、自由時間を生む魔法よ。"],
+      learn:["知識は最強の安全装置。少しずつで大丈夫。", "メモを残すだけで、学びは味方になるわ。"],
+      health:["体のメンテは長生き配当。やさしく続けよ。", "健康と家計、どちらも“整える”がキーワードね。"],
+      side:["チャンスは小さく試す。続ければ力になるわ。", "収入の柱が増えると、気持ちも安定するの。"],
+      joy:["思い出は幸福の配当。使う喜びも大切にね。", "心が満たされる支出は、あなたの栄養よ。"],
+      invest:["分散と長期。焦らず育てていこう。", "積み立ては“未来の自分”へのプレゼント。"],
+      rebalance:["点検は健全。ルールを決めて淡々とね。", "感情ではなく設計図で動けたら十分。"],
+      wait:["“待つ力”も立派な戦略よ。タイミングを見極めて。", "観察は学び。慌てなくていいの。"],
+      risk:["失敗は学びに変わる。次はもっと上手くいくわ。"],
+      plan:["目的別に分けると、迷いが減って続けやすいよ。"],
+      protect:["守りを整えると、攻めも落ち着いてできるの。"],
+      overseas:["世界に分散するのは、“世界でお金を働かせる”こと。ドルや為替もゆっくり学ぼう。"],
+      ending:["この一年、よくがんばったね。積み重ねは裏切らないよ。", "数字より、考え方が育ったことがいちばんの成果よ。"]
+    }
+  },
+  rei: {
+    key: 'rei',
+    name: 'レイ（キャリア）',
+    avatarSrc: "images/chara2.jpg",
+    desc: 'キリッとロジカル。設計×実行で伴走。',
+    quotes: {
+      save:["固定費の最適化 = 可処分時間の創出だ。", "先に“ルール”を決めれば迷わない。"],
+      learn:["知識は最強のセーフティネット。週1の学びを。", "メモと振り返りで再現性を上げよう。"],
+      health:["資産形成は長距離走。体調管理はKPIだ。", "小さな継続が複利を生む。"],
+      side:["小さく試し、数字で評価する。", "収入の柱を増やせば耐性が上がる。"],
+      joy:["予算化された余暇は、長続きする。", "幸福のポートフォリオを意識しよう。"],
+      invest:["長期・分散・低コスト：この原則を守れ。", "積み立ては“未来の自分への給与”。"],
+      rebalance:["年1〜2回のリバランスをルーチン化。", "感情ではなく設計図に従おう。"],
+      wait:["待つ判断も戦略。市場は常にある。", "観察→仮説→次の一手。"],
+      risk:["失敗はデータ。学びに変換して次へ。"],
+      plan:["目的別の資金配分で迷いを削減。"],
+      protect:["守りが整うほど攻められる。バランスだ。"],
+      overseas:["通貨・地域の分散でボラ耐性を上げる。"],
+      ending:["思考のアップデートが最大の成果だ。よくやった。"]
+    }
+  },
+  aoi: {
+    key: 'aoi',
+    name: 'アオイ（フェミニン）',
+    avatarSrc: "images/chara3.jpg",
+    desc: '明るく前向き。モチベUP担当！',
+    quotes: {
+      save:["ちょっとの工夫で未来がふわっと軽くなるよ！", "固定費をスリムにして、やりたいこと増やそ♪"],
+      learn:["学びはごほうび。今日のひとことメモから！", "知ってるだけでドキドキがワクワクに。"],
+      health:["ココロとカラダのメンテ、いっしょに続けよ！", "健康はハッピー配当！"],
+      side:["小さく始める→続ける→気づいたら積み上がってる！", "わくわくする挑戦、1歩いってみよ♪"],
+      joy:["思い出はずっと残る資産だよ〜！", "うれしい支出は、心の栄養♡"],
+      invest:["コツコツ最強！長期・分散でのんびり育てよ。", "未来の自分へのプレゼント、今日も1口♪"],
+      rebalance:["ときどき整えるだけでスッキリ！", "設計図どおりに戻せばOKだよ〜。"],
+      wait:["あせらない、今は観察タイムだね！", "次のチャンス、ぜったい来るよ！"],
+      risk:["うまくいかない日も、学びポイントGET！"],
+      plan:["目的別でわけわけ、迷わずGO！"],
+      protect:["守りがあれば安心して進めるよね♡"],
+      overseas:["世界にひろげて、未来もワクワクに！"],
+      ending:["1年おつかれさま！ぜんぶチカラになってるよ♪"]
+    }
+  }
+};
 
-        updateDisplay();
-    </script>
+let selectedCoach = null; // {key, name, avatarSrc, quotes}
+
+// ===== ゲーム本体（既存） =====
+const monthlyEvents = [
+  { m: '1月', text: '新年の抱負。まず何から始める？', choices:[
+    {label:'家計の見直し（固定費を削減）', money:4000, happy:2, tag:'save'},
+    {label:'小さく投資を始める（つみたて）', money:-3000, happy:4, tag:'invest'},
+    {label:'学びに投資（入門講座）', money:-2000, happy:5, tag:'learn'}
+  ]},
+  { m: '2月', text: '健康診断の結果が届いた', choices:[
+    {label:'運動習慣を作る（ジム）', money:-4000, happy:10, tag:'health'},
+    {label:'食事改善＆散歩を継続', money:-500, happy:7, tag:'health'},
+    {label:'先延ばしにする', money:0, happy:-6, tag:'risk'}
+  ]},
+  { m: '3月', text: '副業のチャンスが到来！', choices:[
+    {label:'小さく挑戦してみる', money:8000, happy:4, tag:'side'},
+    {label:'今は学びを優先', money:-1000, happy:3, tag:'learn'},
+    {label:'生活を整えることに集中', money:0, happy:3, tag:'rest'}
+  ]},
+  { m: '4月', text: '友人から旅行の誘い', choices:[
+    {label:'思い切って行く', money:-8000, happy:18, tag:'joy'},
+    {label:'今回は控えて貯蓄', money:0, happy:-5, tag:'save'},
+    {label:'近場で日帰りに', money:-2000, happy:10, tag:'joy'}
+  ]},
+  { m: '5月', text: '相場の値動きが気になる', choices:[
+    {label:'分散を意識して少額追加', money:-4000, happy:3, tag:'invest'},
+    {label:'一部を利益確定', money:3000, happy:-2, tag:'rebalance'},
+    {label:'積み立てのみ継続', money:0, happy:2, tag:'wait'}
+  ]},
+  { m: '6月', text: '海外投資を検討（ETF/投信）', choices:[
+    {label:'米国ETFを少額購入', money:-5000, happy:4, tag:'overseas'},
+    {label:'為替を学んでから始める', money:0, happy:3, tag:'learn'},
+    {label:'国内中心で継続', money:0, happy:2, tag:'save'}
+  ]},
+  { m: '7月', text: 'ニュース：円安が進行', choices:[
+    {label:'外貨建ての割合を点検', money:0, happy:1, tag:'rebalance'},
+    {label:'外貨積立を少額開始', money:-3000, happy:3, tag:'overseas'},
+    {label:'様子を見る', money:0, happy:0, tag:'wait'}
+  ]},
+  { m: '8月', text: 'NISA拡充の特集を視聴', choices:[
+    {label:'つみたて枠を増額', money:-4000, happy:4, tag:'invest'},
+    {label:'成長投資枠を一部活用', money:-3000, happy:3, tag:'invest'},
+    {label:'メモだけ残して検討', money:0, happy:1, tag:'wait'}
+  ]},
+  { m: '9月', text: '物価上昇で生活コストが上がる', choices:[
+    {label:'固定費の再見直し', money:3000, happy:1, tag:'save'},
+    {label:'収入アップ策を探す', money:0, happy:2, tag:'side'},
+    {label:'ポイント活用・家計術', money:1000, happy:2, tag:'save'}
+  ]},
+  { m: '10月', text: '家族の出費イベント（教育/介護など）', choices:[
+    {label:'目的別口座から捻出', money:-5000, happy:4, tag:'plan'},
+    {label:'投資の一部を取り崩す', money:4000, happy:-2, tag:'rebalance'},
+    {label:'支出を分割し計画化', money:-2000, happy:3, tag:'plan'}
+  ]},
+  { m: '11月', text: '資産を守る：保険とリスク対策', choices:[
+    {label:'保障内容を点検・最適化', money:1000, happy:2, tag:'protect'},
+    {label:'最低限に見直し', money:2000, happy:1, tag:'protect'},
+    {label:'変更しない', money:0, happy:0, tag:'wait'}
+  ]},
+  { m: '12月', text: '1年の振り返りと来年の設計', choices:[
+    {label:'自動積立＆リバランス設定', money:0, happy:4, tag:'rebalance'},
+    {label:'来年の目標と予算を作成', money:0, happy:5, tag:'plan'},
+    {label:'ご褒美に小さな旅行', money:-3000, happy:14, tag:'joy'}
+  ]},
+  { m: '2年目1月', text: '2年目のスタート。昨年の記録をもとに新戦略を検討', choices:[
+    {label:'支出データを分析し改善案を即実行', money:3000, happy:2, tag:'plan'},
+    {label:'積立額を月1万円アップ', money:-10000, happy:5, tag:'invest'},
+    {label:'まずは体制を整える（休息＆棚卸）', money:0, happy:6, tag:'rest'}
+  ]},
+  { m: '2年目2月', text: '共同プロジェクトのお誘いが届く', choices:[
+    {label:'副業として参画する', money:9000, happy:6, tag:'side'},
+    {label:'勉強会だけ参加して知見を得る', money:-2000, happy:4, tag:'learn'},
+    {label:'今は本業に集中', money:0, happy:2, tag:'wait'}
+  ]},
+  { m: '2年目3月', text: '家族イベントに向けての準備', choices:[
+    {label:'目的別口座を再整備', money:2000, happy:3, tag:'plan'},
+    {label:'思い切ってサプライズ旅行', money:-7000, happy:16, tag:'joy'},
+    {label:'保険プランを見直す', money:1500, happy:2, tag:'protect'}
+  ]},
+  { m: '2年目4月', text: '最新フィンテックツールの特集', choices:[
+    {label:'ツールを導入して投資を自動化', money:-4000, happy:5, tag:'invest'},
+    {label:'まず使いこなし講座を受講', money:-2500, happy:4, tag:'learn'},
+    {label:'既存ツールで十分と判断', money:0, happy:1, tag:'wait'}
+  ]},
+  { m: '2年目5月', text: '物価上昇第2波。生活コストがじわり', choices:[
+    {label:'共同購入やシェアで固定費削減', money:4000, happy:3, tag:'save'},
+    {label:'副収入の新柱をリサーチ', money:-1000, happy:5, tag:'side'},
+    {label:'今はやりくり術で耐える', money:500, happy:1, tag:'plan'}
+  ]},
+  { m: '2年目6月', text: '海外研修のチャンスが巡ってくる', choices:[
+    {label:'研修に参加しネットワーク拡大', money:-12000, happy:10, tag:'learn'},
+    {label:'現地投資も視察し少額で挑戦', money:-6000, happy:6, tag:'overseas'},
+    {label:'国内オンライン講座で代替', money:-2000, happy:3, tag:'learn'}
+  ]},
+  { m: '2年目7月', text: '市場ボラティリティが再び上昇', choices:[
+    {label:'資産全体を見直しリバランス', money:0, happy:3, tag:'rebalance'},
+    {label:'積立のみ継続し様子見', money:0, happy:1, tag:'wait'},
+    {label:'学んだリスク管理法を検証', money:-1500, happy:2, tag:'risk'}
+  ]},
+  { m: '2年目8月', text: 'コミュニティでイベントを主催してみないかと提案', choices:[
+    {label:'ワークショップを企画し開催', money:4000, happy:12, tag:'side'},
+    {label:'交流会を開き仲間づくり', money:-3000, happy:14, tag:'joy'},
+    {label:'参加のみで情報収集', money:-2000, happy:5, tag:'learn'}
+  ]},
+  { m: '2年目9月', text: '大型家電の買い替えが必要に', choices:[
+    {label:'エコ家電で長期コスパを優先', money:-8000, happy:5, tag:'plan'},
+    {label:'中古やリースを活用', money:-3000, happy:3, tag:'save'},
+    {label:'買わずに修理を選ぶ', money:-1500, happy:1, tag:'save'}
+  ]},
+  { m: '2年目10月', text: '仕事に転機。役職や働き方を再設計', choices:[
+    {label:'責任あるポジションを引き受ける', money:7000, happy:4, tag:'side'},
+    {label:'学び直し期間を確保', money:-5000, happy:6, tag:'learn'},
+    {label:'働き方を見直し余白を作る', money:-2000, happy:8, tag:'rest'}
+  ]},
+  { m: '2年目11月', text: '資産防衛の特別セミナー', choices:[
+    {label:'ファミリーガバナンスを設計', money:2000, happy:4, tag:'protect'},
+    {label:'信託や相続の専門家に相談', money:-4000, happy:3, tag:'plan'},
+    {label:'要点をまとめて備忘録', money:0, happy:2, tag:'learn'}
+  ]},
+  { m: '2年目12月', text: '2年間の総括と次のビジョン作り', choices:[
+    {label:'3年目の資産配分と目標を設計', money:0, happy:6, tag:'plan'},
+    {label:'チームや家族と祝うリトリート', money:-9000, happy:18, tag:'joy'},
+    {label:'2年間の成果をnoteにまとめ発信', money:2000, happy:8, tag:'learn'}
+  ]}
+];
+
+const START_MONEY = 50000;
+const START_HAPPY = 50;
+let turn = 0; // 0..11
+let money = START_MONEY; // 初期所持金
+let happy = START_HAPPY;
+const tagPickCount = {}; // 選択傾向の集計
+const monthHistory = [];
+const reviewSchedule = [6, 12, 18, 24];
+const completedReviews = new Set();
+let reviewState = { active:false, onClose:null };
+let introState = { active:false };
+const completedQuizTurns = new Set();
+let quizState = { active:false, onClose:null, quiz:null, answered:false };
+let quizCycleIndexYear1 = 0;
+let quizCycleIndexYear2 = 0;
+
+function getChapterIndex(){
+  const idx = Math.floor(Math.min(turn, monthlyEvents.length-1)/3);
+  return Math.max(0, Math.min(chapterInfo.length-1, idx));
+}
+
+function updateChapterBanner(){
+  const banner = document.getElementById('chapterBanner');
+  if(!banner) return;
+  const chapter = chapterInfo[getChapterIndex()];
+  banner.innerHTML = `<div>${chapter.label}</div><small>${chapter.sub}</small>`;
+}
+
+function applySeasonTheme(){
+  const theme = seasonThemes[getChapterIndex()] || seasonThemes[seasonThemes.length-1];
+  document.body.style.background = theme.gradient;
+  document.documentElement.style.setProperty('--accent', theme.accent);
+  document.documentElement.style.setProperty('--accent-soft', theme.soft);
+}
+
+function calcProgress(value, max){
+  if(max === 0) return 0;
+  const pct = (value / max) * 100;
+  return Math.max(0, Math.min(100, pct));
+}
+
+function updateMeters(){
+  const moneyFill = document.getElementById('moneyFill');
+  const happyFill = document.getElementById('happyFill');
+  if(!moneyFill) return;
+  moneyFill.style.width = calcProgress(money, 80000) + '%';
+  happyFill.style.width = calcProgress(happy, 100) + '%';
+
+  document.getElementById('moneyValue').textContent = `￥${money.toLocaleString()}`;
+  document.getElementById('happyValue').textContent = `${happy} / 100`;
+}
+
+function renderBadges(){
+  const shelf = document.getElementById('badgeShelf');
+  if(!shelf) return;
+  shelf.innerHTML = badgeCatalog.map(b => {
+    const unlocked = unlockedBadges.has(b.id);
+    return `
+      <div class="badge ${unlocked ? 'unlocked' : ''}">
+        <div class="badge-icon">${unlocked ? b.icon : '？'}</div>
+        <div class="badge-label">${unlocked ? b.title : '？？？'}</div>
+        <div style="font-size:11px; color:${unlocked ? '#a34f84' : '#aaa'};">
+          ${unlocked ? b.desc : '解放条件を探してみよう'}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function unlockBadge(id){
+  if(unlockedBadges.has(id)) return;
+  const info = badgeCatalog.find(b => b.id === id);
+  if(!info) return;
+  unlockedBadges.add(id);
+  renderBadges();
+  showToast(`${info.icon} ${info.title}を獲得！`);
+}
+
+function evaluateBadges(choice){
+  if(choice && (choice.tag === 'invest' || choice.tag === 'overseas')){
+    unlockBadge('investor');
+  }
+  if((tagPickCount.health || 0) >= 2){
+    unlockBadge('wellness');
+  }
+  if((tagPickCount.plan || 0) + (tagPickCount.save || 0) >= 3){
+    unlockBadge('planner');
+  }
+  if((tagPickCount.overseas || 0) >= 2){
+    unlockBadge('globetrotter');
+  }
+  if(happy >= 70){
+    unlockBadge('harmony');
+  }
+}
+
+function addLogEntry(month, choice, delta){
+  logEntries.unshift({
+    month,
+    choice,
+    delta: { money: delta.money, happy: delta.happy }
+  });
+  if(logEntries.length > 6) logEntries.pop();
+  renderLog();
+}
+
+function renderLog(){
+  const log = document.getElementById('log');
+  if(!log) return;
+  const entries = logEntries.map(item => `
+    <div class="log-entry">
+      <div class="log-month">${item.month}</div>
+      <div class="log-choice">${item.choice}</div>
+      <div class="log-delta">${formatDelta(item.delta)}</div>
+    </div>
+  `).join('');
+  log.innerHTML = `<div class="log-title">Decision Log</div>` + (entries || `<p style="margin:0; font-size:12px; color:#777;">まだ選択が記録されていません。</p>`);
+}
+
+function formatDelta({money: m, happy: h}){
+  const pieces = [];
+  if(m) pieces.push(`💵 ${m>0?'+':''}${m}`);
+  if(h) pieces.push(`💖 ${h>0?'+':''}${h}`);
+  return pieces.length ? pieces.join('<br>') : '±0';
+}
+
+function showToast(message){
+  const toast = document.getElementById('toast');
+  if(!toast) return;
+  toast.innerHTML = message;
+  toast.classList.add('visible');
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(()=>toast.classList.remove('visible'), 2400);
+}
+
+function describeReward(reward){
+  if(!reward) return '---';
+  const pieces = [];
+  if(reward.money) pieces.push(`💵 ${reward.money>0?'+':''}${reward.money}`);
+  if(reward.happy) pieces.push(`💖 ${reward.happy>0?'+':''}${reward.happy}`);
+  return pieces.join(' / ') || '---';
+}
+
+function updateMissionBoard(){
+  const board = document.getElementById('missionBoard');
+  if(!board) return;
+  if(!activeMission){
+    board.classList.add('hidden');
+    board.innerHTML = '';
+    return;
+  }
+  board.classList.remove('hidden');
+  const pct = Math.min(100, Math.round((activeMission.progress/activeMission.target)*100));
+  const status = activeMission.completed ? 'CLEARED 🎉' : '進行中';
+  board.innerHTML = `
+    <div class="mission-title">🎯 ${activeMission.title}</div>
+    <div class="mission-desc">${activeMission.desc}</div>
+    <div class="mission-progress">
+      <span>${activeMission.progress}/${activeMission.target} steps</span>
+      <span>${status}</span>
+    </div>
+    <div class="mission-progress-bar">
+      <span class="mission-progress-fill" style="width:${pct}%"></span>
+    </div>
+    <div class="mission-tags">
+      ${activeMission.tags.map(tag => `<span>${tagLabels[tag] || tag}</span>`).join('')}
+    </div>
+    <div class="mission-reward">報酬: ${describeReward(activeMission.reward)}</div>
+  `;
+}
+
+function startMission(mission){
+  if(!mission){
+    activeMission = null;
+    updateMissionBoard();
+    return;
+  }
+  activeMission = { ...mission, progress:0, completed:false };
+  updateMissionBoard();
+  showToast(`🎯 ミッション開始: ${mission.title}`);
+}
+
+function applyMissionReward(reward){
+  if(!reward) return;
+  if(reward.money) money += reward.money;
+  if(reward.happy) happy += reward.happy;
+}
+
+function handleMissionProgress(tag){
+  if(!activeMission || activeMission.completed) return;
+  if(!activeMission.tags.includes(tag)) return;
+  activeMission.progress = Math.min(activeMission.target, activeMission.progress + 1);
+  showToast(`＋1 ${activeMission.title}`);
+  if(activeMission.progress >= activeMission.target){
+    activeMission.completed = true;
+    showToast(`✅ ミッションクリア: ${activeMission.title}`);
+    applyMissionReward(activeMission.reward);
+  }
+  updateMissionBoard();
+}
+
+function recordMonthHistory(entry){
+  monthHistory.push(entry);
+}
+
+function shouldTriggerReview(currentTurn){
+  return reviewSchedule.includes(currentTurn) && !completedReviews.has(currentTurn);
+}
+
+function shouldTriggerQuiz(currentTurn){
+  if(currentTurn === 0) return false;
+  return currentTurn % 3 === 0 && !completedQuizTurns.has(currentTurn);
+}
+
+function selectQuizForTurn(currentTurn){
+  const isSecondYear = currentTurn > 12;
+  const bank = isSecondYear ? seminarQuizBankYear2 : seminarQuizBankYear1;
+  if(!bank.length) return null;
+  if(isSecondYear){
+    const quiz = bank[quizCycleIndexYear2 % bank.length];
+    quizCycleIndexYear2++;
+    return quiz;
+  }
+  const quiz = bank[quizCycleIndexYear1 % bank.length];
+  quizCycleIndexYear1++;
+  return quiz;
+}
+
+function computeHalfYearStats(endTurn){
+  const blockSize = 6;
+  const startTurn = Math.max(0, endTurn - blockSize);
+  const entries = monthHistory.filter(e => e.turnIndex >= startTurn && e.turnIndex < endTurn);
+  const prevEntry = monthHistory.find(e => e.turnIndex === startTurn - 1);
+  const startMoney = startTurn === 0 ? START_MONEY : (prevEntry ? prevEntry.afterMoney : START_MONEY);
+  const startHappy = startTurn === 0 ? START_HAPPY : (prevEntry ? prevEntry.afterHappy : START_HAPPY);
+  const endEntry = monthHistory.find(e => e.turnIndex === endTurn - 1);
+  const endMoney = endEntry ? endEntry.afterMoney : money;
+  const endHappy = endEntry ? endEntry.afterHappy : happy;
+  const moneyChange = endMoney - startMoney;
+  const happyChange = endHappy - startHappy;
+  const avgHappy = entries.length ? Math.round(entries.reduce((sum,e)=>sum+e.afterHappy,0)/entries.length) : endHappy;
+  const tagCounts = {};
+  entries.forEach(e => {
+    if(!e.tag) return;
+    tagCounts[e.tag] = (tagCounts[e.tag] || 0) + 1;
+  });
+  const topTags = Object.entries(tagCounts)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,3)
+    .map(([tag,count]) => `${tagLabels[tag] || tag}×${count}`);
+  return {
+    startTurn,
+    endTurn,
+    startMoney,
+    endMoney,
+    startHappy,
+    endHappy,
+    moneyChange,
+    happyChange,
+    avgHappy,
+    tagCounts,
+    topTags,
+    entries
+  };
+}
+
+function formatSigned(value){
+  if(value === 0) return '±0';
+  return `${value>0?'+':''}${value}`;
+}
+
+function buildReviewHighlights(stats){
+  const highlights = [];
+  highlights.push(`💵 ￥${stats.startMoney.toLocaleString()} → ￥${stats.endMoney.toLocaleString()}（${formatSigned(stats.moneyChange)}円）`);
+  highlights.push(`💖 ${stats.startHappy} → ${stats.endHappy}（${formatSigned(stats.happyChange)}）／平均 ${stats.avgHappy}`);
+  if(stats.topTags.length){
+    highlights.push(`🧭 よく選んだテーマ：${stats.topTags.join(' / ')}`);
+  } else {
+    highlights.push('🧭 行動データが少ないため次期に注目。');
+  }
+  return highlights;
+}
+
+function buildToughFeedback(stats){
+  const coachName = selectedCoach ? selectedCoach.name : 'コーチ';
+  const comments = [];
+  const moneyGap = goalPlan ? goalPlan.money - stats.endMoney : null;
+  const happyGap = goalPlan ? goalPlan.happy - stats.endHappy : null;
+  if(stats.moneyChange < 0){
+    comments.push(`${coachName}「現金が${Math.abs(stats.moneyChange).toLocaleString()}円減ったまま。浪費を“イベント”化しないとループするよ。」`);
+  } else if(moneyGap !== null && moneyGap > 10000){
+    comments.push(`${coachName}「目標との差が￥${moneyGap.toLocaleString()}。数字を直視して攻め方を修正しよう。」`);
+  }
+  if(stats.avgHappy < 60){
+    comments.push(`${coachName}「幸福度の平均が${stats.avgHappy}。休息もご褒美も“計画”に落とし込めていない証拠。」`);
+  } else if(happyGap !== null && happyGap > 5){
+    comments.push(`${coachName}「幸福度が目標より${happyGap}ポイント低い。ストレス源を洗い出して。」`);
+  }
+  if(Object.keys(stats.tagCounts).length < 3){
+    comments.push(`${coachName}「選択が偏りすぎ。違うテーマを敢えて入れて経験値を増やそう。」`);
+  }
+  const investActions = (stats.tagCounts.invest || 0) + (stats.tagCounts.overseas || 0);
+  if(investActions === 0){
+    comments.push(`${coachName}「投資や海外アクションがゼロ。情報収集だけで満足していない？」`);
+  }
+  const protectActions = (stats.tagCounts.protect || 0) + (stats.tagCounts.rebalance || 0);
+  if(protectActions === 0){
+    comments.push(`${coachName}「守り・点検のアクションが見当たらない。揺らぎ耐性がゼロになるよ。」`);
+  }
+  if(!comments.length){
+    comments.push(`${coachName}「悪くはない。でもこのペースでは“普通”で終わる。数字と習慣をもう一段アップデートしよう。」`);
+  }
+  return comments.slice(0,3);
+}
+
+function blockLabel(startTurn, endTurn){
+  const startLabel = monthlyEvents[startTurn]?.m || '---';
+  const endLabel = monthlyEvents[endTurn-1]?.m || '---';
+  return `${startLabel}〜${endLabel}`;
+}
+
+function openHalfYearReview(endTurn, onClose){
+  const overlay = document.getElementById('reviewOverlay');
+  if(!overlay){
+    if(typeof onClose === 'function'){ onClose(); }
+    return;
+  }
+  const stats = computeHalfYearStats(endTurn);
+  completedReviews.add(endTurn);
+  const titleEl = document.getElementById('reviewTitle');
+  const subtitleEl = document.getElementById('reviewSubtitle');
+  const moneySummary = document.getElementById('reviewMoneySummary');
+  const happySummary = document.getElementById('reviewHappySummary');
+  const tagSummary = document.getElementById('reviewTagSummary');
+  const highlightList = document.getElementById('reviewHighlightList');
+  const feedbackBox = document.getElementById('reviewFeedbackBox');
+  const label = blockLabel(stats.startTurn, stats.endTurn);
+  if(titleEl){ titleEl.textContent = `${label}レビュー`; }
+  if(subtitleEl){ subtitleEl.textContent = `${Math.ceil(stats.endTurn/6)}期目のコーチフィードバック`; }
+  if(moneySummary){
+    moneySummary.textContent = `￥${stats.startMoney.toLocaleString()} → ￥${stats.endMoney.toLocaleString()}`;
+  }
+  if(happySummary){
+    happySummary.textContent = `${stats.startHappy} → ${stats.endHappy} / Avg ${stats.avgHappy}`;
+  }
+  if(tagSummary){
+    tagSummary.textContent = stats.topTags[0] || 'データ不足';
+  }
+  const highlights = buildReviewHighlights(stats);
+  if(highlightList){
+    highlightList.innerHTML = highlights.map(item => `<li>${item}</li>`).join('');
+  }
+  const critiques = buildToughFeedback(stats);
+  if(feedbackBox){
+    feedbackBox.innerHTML = `<strong>厳しい指摘</strong><br>${critiques.join('<br>')}`;
+  }
+  overlay.classList.add('visible');
+  reviewState = { active:true, onClose };
+}
+
+function closeHalfYearReview(){
+  if(!reviewState.active) return;
+  const overlay = document.getElementById('reviewOverlay');
+  if(overlay){ overlay.classList.remove('visible'); }
+  const cb = reviewState.onClose;
+  reviewState = { active:false, onClose:null };
+  if(typeof cb === 'function'){ cb(); }
+}
+
+function openCoachIntro(){
+  const overlay = document.getElementById('coachIntroOverlay');
+  if(!overlay){ openGoalSetting(); return; }
+  const coachNameEl = document.getElementById('coachIntroName');
+  const coachDescEl = document.getElementById('coachIntroDesc');
+  const coachOpeningEl = document.getElementById('coachIntroOpening');
+  const coachAvatarEl = document.getElementById('coachIntroAvatar');
+  const pointsEl = document.getElementById('coachIntroPoints');
+  if(coachAvatarEl){ coachAvatarEl.src = selectedCoach?.avatarSrc || ''; }
+  if(coachNameEl){ coachNameEl.textContent = `${selectedCoach?.name || 'コーチ'} の自己紹介`; }
+  if(coachDescEl){ coachDescEl.textContent = selectedCoach?.desc || ''; }
+  if(coachOpeningEl){
+    coachOpeningEl.innerHTML = `${selectedCoach?.name || 'コーチ'}「これから1年、所持金と幸福度の2本柱を一緒に整えるよ。数字だけでなく、どう感じて動くかを毎月振り返ろう。」`;
+  }
+  if(pointsEl){
+    pointsEl.innerHTML = statImportance.map(point => `
+      <li>
+        <h4>${point.title}</h4>
+        <p style="margin:0;">${point.text}</p>
+      </li>
+    `).join('');
+  }
+  overlay.classList.add('visible');
+  introState = { active:true };
+  showCoach('plan', 'まずは私の自己紹介と、所持金＆幸福度を管理する意味から話そう。');
+}
+
+function closeCoachIntro(){
+  if(!introState.active){
+    openGoalSetting();
+    return;
+  }
+  const overlay = document.getElementById('coachIntroOverlay');
+  if(overlay){ overlay.classList.remove('visible'); }
+  introState = { active:false };
+  openGoalSetting();
+}
+
+function openSeminarQuiz(currentTurn, onClose){
+  const overlay = document.getElementById('quizOverlay');
+  if(!overlay){
+    if(typeof onClose === 'function'){ onClose(); }
+    return;
+  }
+  const quiz = selectQuizForTurn(currentTurn);
+  if(!quiz){
+    if(typeof onClose === 'function'){ onClose(); }
+    return;
+  }
+  const titleEl = document.getElementById('quizTitle');
+  const questionEl = document.getElementById('quizQuestion');
+  const optionsEl = document.getElementById('quizOptions');
+  const feedbackEl = document.getElementById('quizFeedback');
+  const continueBtn = document.getElementById('quizContinue');
+  completedQuizTurns.add(currentTurn);
+  quizState = { active:true, onClose, quiz, answered:false };
+  if(titleEl){ titleEl.textContent = quiz.title; }
+  if(questionEl){ questionEl.textContent = quiz.question; }
+  if(feedbackEl){ feedbackEl.textContent = ''; }
+  if(continueBtn){
+    continueBtn.disabled = true;
+  }
+  if(optionsEl){
+    optionsEl.innerHTML = '';
+    quiz.choices.forEach((choice, idx) => {
+      const btn = document.createElement('button');
+      btn.textContent = choice.label;
+      btn.addEventListener('click', () => answerSeminarQuiz(idx));
+      optionsEl.appendChild(btn);
+    });
+  }
+  overlay.classList.add('visible');
+  showCoach('learn', 'セミナー復習クイズで理解度をチェックしよう。正解すれば幸福度ボーナス！');
+}
+
+function answerSeminarQuiz(choiceIndex){
+  if(!quizState.active || quizState.answered) return;
+  const overlay = document.getElementById('quizOverlay');
+  const optionsEl = document.getElementById('quizOptions');
+  const feedbackEl = document.getElementById('quizFeedback');
+  const continueBtn = document.getElementById('quizContinue');
+  const quiz = quizState.quiz;
+  const choice = quiz?.choices?.[choiceIndex];
+  if(!choice || !optionsEl) return;
+  quizState.answered = true;
+  const buttons = Array.from(optionsEl.querySelectorAll('button'));
+  buttons.forEach((btn, idx) => {
+    btn.disabled = true;
+    if(quiz.choices[idx].correct){
+      btn.classList.add('correct');
+    } else if(idx === choiceIndex){
+      btn.classList.add('incorrect');
+    }
+  });
+  const delta = choice.happy || 0;
+  happy += delta;
+  updateStatus();
+  const coachLine = choice.correct
+    ? `${selectedCoach?.name || 'コーチ'}「いいね！理解が深まると行動速度も上がるよ。」`
+    : `${selectedCoach?.name || 'コーチ'}「ここは押さえておきたい基礎。次からは答えを見ずに説明できるか確認しよう。」`;
+  showCoach('learn', coachLine);
+  if(feedbackEl){
+    const explanation = quiz.explanation ? `<br>${quiz.explanation}` : '';
+    feedbackEl.innerHTML = `${choice.feedback}${explanation}<br>今回の幸福度変化：${delta>0?'+':''}${delta}`;
+  }
+  if(continueBtn){
+    continueBtn.disabled = false;
+  }
+}
+
+function closeSeminarQuiz(){
+  if(!quizState.active) return;
+  const overlay = document.getElementById('quizOverlay');
+  if(overlay){ overlay.classList.remove('visible'); }
+  const cb = quizState.onClose;
+  quizState = { active:false, onClose:null, quiz:null, answered:false };
+  if(typeof cb === 'function'){ cb(); }
+}
+
+const goalQuestions = [
+  {
+    id: 'buffer',
+    title: '守りの厚さを決めよう',
+    text: '生活費の何か月分を現金でキープできると安心？支出や家族構成と照らして考えてみよう。',
+    intro: '守りが厚いほど日々の安心感が増す分、攻めの資金はゆっくり育てることになるよ。',
+    options: [
+      {
+        value: 'lean',
+        label: '3か月分でOK。機動力優先',
+        detail: '固定費はスリム。現金を絞って挑戦へ回す',
+        effect: { money: -6000, happy: 2 },
+        summary: '機動力重視でクッションは薄めに。',
+        coach: '攻めを優先するなら現金を必要最小限に。代わりに体調管理と情報収集は怠らないで。'
+      },
+      {
+        value: 'standard',
+        label: '4〜5か月分をキープ',
+        detail: '守りと攻めを半々に。',
+        effect: { money: 0, happy: 0 },
+        summary: '標準的な防衛ラインでバランス型。',
+        coach: '地に足をつけた状態で挑戦できるバランス。暮らしの変動にも落ち着いて対応できるね。'
+      },
+      {
+        value: 'solid',
+        label: '6か月以上は欲しい',
+        detail: '家族・仕事の事情で守り厚め',
+        effect: { money: 9000, happy: -2 },
+        summary: '守りを厚くして心を落ち着かせる。',
+        coach: '一時的に幸福度が下がっても、安心材料を積んでおけば大きく崩れない。'
+      }
+    ]
+  },
+  {
+    id: 'challenge',
+    title: '今年の挑戦レベルは？',
+    text: '副業や投資など、新しいチャレンジのギアをどこまで上げたい？',
+    intro: '攻めるほど準備資金と心の余白の両方が必要になるよ。',
+    options: [
+      {
+        value: 'calm',
+        label: '整える年。現状を磨く',
+        detail: '定着に集中し無理はしない',
+        effect: { money: 0, happy: 2 },
+        summary: '整え優先で安定重視。',
+        coach: 'まずは仕組み化と習慣化。伸びしろより再現性を磨こう。'
+      },
+      {
+        value: 'medium',
+        label: '小さく2〜3個挑戦',
+        detail: '副業や学びを少し増やす',
+        effect: { money: 3000, happy: 3 },
+        summary: '行動量を増やして経験値を積む。',
+        coach: '小さく始めて検証すれば、数字も心も整えながらギアを上げられるよ。'
+      },
+      {
+        value: 'bold',
+        label: '一気に攻める',
+        detail: '副業や投資をぐっと拡張',
+        effect: { money: 7000, happy: 5 },
+        summary: '攻めのギアを入れて伸びしろを狙う。',
+        coach: '挑戦が増えるほどコストや感情の揺れも増える。資金とご褒美の両方を設計していこう。'
+      }
+    ]
+  },
+  {
+    id: 'wellbeing',
+    title: '心の余白はどのくらい？',
+    text: '幸福度をキープするための休息や自己投資をどう扱いたい？',
+    intro: '余白を厚くすると判断力も回復しやすい。逆に削ればスピードは出るけれど疲れやすい。',
+    options: [
+      {
+        value: 'focus',
+        label: '効率重視。やることに集中',
+        detail: '必要最低限だけ休む',
+        effect: { money: 0, happy: -3 },
+        summary: '集中モードで効率優先。',
+        coach: '集中モードは強いけど、疲れを翌月に持ち越さない仕組みをつくろう。'
+      },
+      {
+        value: 'balanced',
+        label: 'バランスよく余白も予定化',
+        detail: '月1のご褒美やメンテ',
+        effect: { money: 0, happy: 2 },
+        summary: '整える×攻めるを両立。',
+        coach: '余白を予定に入れると自己管理の精度が上がるよ。'
+      },
+      {
+        value: 'lush',
+        label: '余白たっぷり。内面ケア最優先',
+        detail: 'ご褒美や休暇をしっかり確保',
+        effect: { money: -2000, happy: 6 },
+        summary: '幸福度を最優先に温かく過ごす。',
+        coach: '心の余白を厚くすると意思決定も冴える。投資より先に自分を満たそう。'
+      }
+    ]
+  }
+];
+
+let goalWizard = null;
+
+function goalDefaults(){
+  return { money: 80000, happy: 80 };
+}
+
+function sanitizeGoalPlan(plan){
+  const defaults = goalDefaults();
+  const sanitized = {
+    money: Number.isFinite(plan?.money) ? plan.money : defaults.money,
+    happy: Number.isFinite(plan?.happy) ? plan.happy : defaults.happy
+  };
+  sanitized.money = Math.max(50000, Math.min(150000, Math.round(sanitized.money / 1000) * 1000));
+  sanitized.happy = Math.max(55, Math.min(95, Math.round(sanitized.happy)));
+  return sanitized;
+}
+
+function resetGoalWizard(){
+  goalWizard = {
+    step: 0,
+    answers: {},
+    proposal: goalDefaults()
+  };
+}
+
+function computeGoalProposal(){
+  if(!goalWizard){
+    return goalDefaults();
+  }
+  const draft = { ...goalDefaults() };
+  goalQuestions.forEach(q => {
+    const answer = goalWizard.answers[q.id];
+    const opt = q.options.find(o => o.value === answer);
+    if(opt && opt.effect){
+      if(typeof opt.effect.money === 'number'){ draft.money += opt.effect.money; }
+      if(typeof opt.effect.happy === 'number'){ draft.happy += opt.effect.happy; }
+    }
+  });
+  goalWizard.proposal = sanitizeGoalPlan(draft);
+  return goalWizard.proposal;
+}
+
+function updateGoalCoachNote(question){
+  const noteEl = document.getElementById('goalCoachNote');
+  if(!noteEl || !question) return;
+  const coachName = selectedCoach ? selectedCoach.name : 'コーチ';
+  const answer = goalWizard?.answers[question.id];
+  if(answer){
+    const opt = question.options.find(o => o.value === answer);
+    noteEl.innerHTML = `<strong>${coachName}のコメント</strong><div>${opt?.coach || 'いいね、その感覚でいこう。'}</div>`;
+  } else {
+    noteEl.innerHTML = `<strong>${coachName}からのヒント</strong><div>${question.intro}</div>`;
+  }
+}
+
+function renderGoalQuestion(){
+  if(!goalWizard) return;
+  const question = goalQuestions[goalWizard.step];
+  if(!question){
+    goToGoalSummary();
+    return;
+  }
+  setGoalModalView('question');
+  const titleEl = document.getElementById('goalQuestionTitle');
+  const textEl = document.getElementById('goalQuestionText');
+  const optionsWrap = document.getElementById('goalOptions');
+  if(titleEl){ titleEl.textContent = `${goalWizard.step + 1}. ${question.title}`; }
+  if(textEl){ textEl.textContent = question.text; }
+  if(optionsWrap){
+    optionsWrap.innerHTML = '';
+    question.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.innerHTML = `<strong>${opt.label}</strong><br><small>${opt.detail}</small>`;
+      if(goalWizard.answers[question.id] === opt.value){
+        btn.classList.add('selected');
+      }
+      btn.addEventListener('click', () => {
+        goalWizard.answers[question.id] = opt.value;
+        computeGoalProposal();
+        renderGoalQuestion();
+      });
+      optionsWrap.appendChild(btn);
+    });
+  }
+  updateGoalCoachNote(question);
+  updateGoalWizardButtons();
+}
+
+function updateGoalWizardButtons(){
+  const backBtn = document.getElementById('goalBackStep');
+  const nextBtn = document.getElementById('goalNextStep');
+  const question = goalQuestions[goalWizard?.step || 0];
+  const answered = question ? goalWizard?.answers[question.id] : null;
+  if(backBtn){ backBtn.disabled = !goalWizard || goalWizard.step === 0; }
+  if(nextBtn){
+    nextBtn.textContent = (goalWizard && goalWizard.step === goalQuestions.length - 1) ? '提案を見る' : '次へ';
+    nextBtn.disabled = !answered;
+  }
+}
+
+function advanceGoalWizard(){
+  if(!goalWizard) return;
+  const question = goalQuestions[goalWizard.step];
+  if(question && !goalWizard.answers[question.id]){
+    showToast('1つ選んでから進もう。');
+    return;
+  }
+  if(goalWizard.step < goalQuestions.length - 1){
+    goalWizard.step++;
+    renderGoalQuestion();
+  } else {
+    goToGoalSummary();
+  }
+}
+
+function rewindGoalWizard(){
+  if(!goalWizard || goalWizard.step === 0) return;
+  goalWizard.step--;
+  renderGoalQuestion();
+}
+
+function renderGoalSummary(){
+  const summaryBox = document.getElementById('goalSummaryView');
+  if(!summaryBox) return;
+  const plan = goalWizard?.proposal || computeGoalProposal();
+  const coachName = selectedCoach ? selectedCoach.name : 'コーチ';
+  const answerTags = goalQuestions.map(q => {
+    const opt = q.options.find(o => o.value === goalWizard?.answers[q.id]);
+    return opt ? `<li>${opt.label}</li>` : '';
+  }).filter(Boolean).join('') || '<li>標準プラン</li>';
+  const message = goalQuestions.map(q => {
+    const opt = q.options.find(o => o.value === goalWizard?.answers[q.id]);
+    return opt?.summary;
+  }).filter(Boolean).join('／') || '基準ラインで整えてから進もう。';
+  summaryBox.innerHTML = `
+    <h4>${coachName}の提案</h4>
+    <ul class="goal-summary-list">
+      <li>💵 所持金：￥${plan.money.toLocaleString()}</li>
+      <li>💖 幸福度：${plan.happy}</li>
+    </ul>
+    <p style="font-size:13px; color:#6b3f52; margin:6px 0;">${coachName}「${message}」</p>
+    <ul class="goal-tags">${answerTags}</ul>
+  `;
+}
+
+function goToGoalSummary(){
+  computeGoalProposal();
+  renderGoalSummary();
+  setGoalModalView('summary');
+}
+
+function setGoalModalView(view){
+  const conversation = document.getElementById('goalConversation');
+  const summary = document.getElementById('goalSummaryView');
+  const manual = document.getElementById('goalManualForm');
+  const wizardActions = document.getElementById('goalWizardActions');
+  const summaryActions = document.getElementById('goalSummaryActions');
+  const manualActions = document.getElementById('goalManualActions');
+  if(conversation){ conversation.classList.toggle('hidden', view !== 'question'); }
+  if(summary){ summary.classList.toggle('hidden', view !== 'summary'); }
+  if(manual){ manual.classList.toggle('hidden', view !== 'manual'); }
+  if(wizardActions){ wizardActions.classList.toggle('hidden', view !== 'question'); }
+  if(summaryActions){ summaryActions.classList.toggle('hidden', view !== 'summary'); }
+  if(manualActions){ manualActions.classList.toggle('hidden', view !== 'manual'); }
+}
+
+function startGoalManualEdit(){
+  const plan = goalWizard?.proposal || computeGoalProposal();
+  const moneyInput = document.getElementById('manualGoalMoney');
+  const happyInput = document.getElementById('manualGoalHappy');
+  if(moneyInput){ moneyInput.value = plan.money; }
+  if(happyInput){ happyInput.value = plan.happy; }
+  setGoalModalView('manual');
+}
+
+function backToGoalSummary(){
+  setGoalModalView('summary');
+}
+
+function updateGoalIndicator(){
+  const box = document.getElementById('goalIndicator');
+  if(!box) return;
+  if(!goalPlan){
+    box.classList.add('hidden');
+    box.innerHTML = '';
+    return;
+  }
+  const diffMoney = goalPlan.money - money;
+  const diffHappy = goalPlan.happy - happy;
+  const describe = diff => diff <= 0 ? '達成！' : `あと ${diff}`;
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <strong>コーチと立てた目標</strong>
+    <div class="goal-progress-row"><span>💵 ￥${goalPlan.money.toLocaleString()}</span><span>${describe(diffMoney)}</span></div>
+    <div class="goal-progress-row"><span>💖 ${goalPlan.happy}</span><span>${describe(diffHappy)}</span></div>
+  `;
+}
+
+function openGoalSetting(){
+  const overlay = document.getElementById('goalOverlay');
+  if(!overlay) return;
+  resetGoalWizard();
+  renderGoalQuestion();
+  overlay.classList.add('visible');
+  showCoach('plan', '所持金は守りと挑戦の燃料、幸福度は決断力の源。数字で約束してから冒険を始めよう。');
+}
+
+function closeGoalSetting(){
+  const overlay = document.getElementById('goalOverlay');
+  if(overlay){ overlay.classList.remove('visible'); }
+}
+
+function confirmGoalSetting(skip=false, planOverride=null){
+  if(skip){
+    goalPlan = goalDefaults();
+  } else {
+    const normalized = sanitizeGoalPlan(planOverride || goalWizard?.proposal || goalDefaults());
+    goalPlan = normalized;
+  }
+  closeGoalSetting();
+  updateGoalIndicator();
+  showCoach('plan', 'いい目標が描けたね。毎月一緒に振り返ろう！');
+  nextEvent();
+}
+
+function describeChoiceDeltaText(choice){
+  const pieces = [];
+  if(choice.money) pieces.push(`💵 ${choice.money>0?'+':''}${choice.money}`);
+  if(choice.happy) pieces.push(`💖 ${choice.happy>0?'+':''}${choice.happy}`);
+  return pieces.length ? pieces.join(' / ') : '変化なし';
+}
+
+function getToughLoveMessage(choice){
+  const coachName = selectedCoach ? selectedCoach.name : 'コーチ';
+  const moneyGap = goalPlan ? goalPlan.money - money : null;
+  const happyGap = goalPlan ? goalPlan.happy - happy : null;
+  if(choice.money < 0 && moneyGap !== null && moneyGap > 8000){
+    return `${coachName}「支出が増えて目標との差が${moneyGap.toLocaleString()}円に広がってるよ。数字を直視して立て直そう。」`;
+  }
+  if(happy < 40){
+    return `${coachName}「幸福度が40を下回っているわ。休息やご褒美を計画に組み込まないと、判断が粗くなる。」`;
+  }
+  if(happyGap !== null && happyGap > 10){
+    return `${coachName}「目標の幸福度より${happyGap}ポイント低いね。何を削ったのか振り返って。」`;
+  }
+  if(money < 20000){
+    return `${coachName}「現金クッションが薄い。守りを立て直さないと攻める資格がないよ。」`;
+  }
+  return null;
+}
+
+function getCoachLine(tag){
+  if(!selectedCoach || !selectedCoach.quotes){
+    return "小さな一歩が未来を変えるよ。";
+  }
+  const pool = (selectedCoach.quotes[tag] && selectedCoach.quotes[tag].length)
+    ? selectedCoach.quotes[tag]
+    : Object.values(selectedCoach.quotes).flat();
+  if(!pool || !pool.length){
+    return "小さな一歩が未来を変えるよ。";
+  }
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function buildDialogueScript(eventData, choice, coachLine){
+  const coachName = selectedCoach ? selectedCoach.name : 'コーチ';
+  const summary = describeChoiceDeltaText(choice);
+  const lines = [
+    { speaker:'あなた', text:`${eventData.m}「${eventData.text}」。${choice.label}を選んでみたよ。` },
+    { speaker:coachName, text:coachLine },
+    { speaker:coachName, text:`今回の変化は ${summary}。この流れを次の月につなげよう。` }
+  ];
+  const tough = getToughLoveMessage(choice);
+  if(tough){
+    lines.push({ speaker:coachName, text:tough });
+  }
+  return lines;
+}
+
+function openDialogue(lines, onClose){
+  const overlay = document.getElementById('dialogueOverlay');
+  const listEl = document.getElementById('dialogueList');
+  if(!overlay || !listEl){
+    if(typeof onClose === 'function'){ onClose(); }
+    return false;
+  }
+  listEl.innerHTML = '';
+  lines.forEach(line => {
+    const row = document.createElement('div');
+    row.className = 'dialogue-line';
+    const speaker = document.createElement('div');
+    speaker.className = 'dialogue-speaker';
+    speaker.textContent = line.speaker;
+    const text = document.createElement('div');
+    text.className = 'dialogue-text';
+    text.textContent = line.text;
+    row.appendChild(speaker);
+    row.appendChild(text);
+    listEl.appendChild(row);
+  });
+  overlay.classList.add('visible');
+  dialogueState = { active:true, onClose };
+  return true;
+}
+
+function closeDialogue(){
+  if(!dialogueState.active) return;
+  const overlay = document.getElementById('dialogueOverlay');
+  if(overlay){ overlay.classList.remove('visible'); }
+  const cb = dialogueState.onClose;
+  dialogueState = { active:false, onClose:null };
+  if(typeof cb === 'function'){ cb(); }
+}
+
+function renderStorySlide(){
+  if(!storyState.active) return;
+  const overlay = document.getElementById('storyOverlay');
+  if(!overlay) return;
+  const chapterIdx = storyState.chapterIndex;
+  const story = chapterStories[chapterIdx];
+  const slide = story.slides[storyState.slide];
+  document.getElementById('storyChapter').textContent =
+    chapterInfo[chapterIdx]?.label || `Chapter ${chapterIdx+1}`;
+  document.getElementById('storyText').innerHTML = slide.text;
+  document.getElementById('storyMissionHint').textContent =
+    `ミッション：${story.mission.title} — ${story.mission.desc}`;
+  const nextBtn = document.getElementById('storyNext');
+  if(nextBtn){
+    nextBtn.textContent = (storyState.slide === story.slides.length-1) ? '旅を進める' : '続きを読む';
+  }
+}
+
+function openChapterStory(index, onComplete){
+  const overlay = document.getElementById('storyOverlay');
+  if(!overlay || !chapterStories[index]){
+    if(typeof onComplete === 'function'){ onComplete(); }
+    return;
+  }
+  storyState = { active:true, chapterIndex:index, slide:0, onComplete };
+  overlay.classList.add('visible');
+  renderStorySlide();
+}
+
+function advanceStorySlide(){
+  if(!storyState.active) return;
+  const story = chapterStories[storyState.chapterIndex];
+  if(storyState.slide < story.slides.length-1){
+    storyState.slide++;
+    renderStorySlide();
+  } else {
+    finishStory();
+  }
+}
+
+function finishStory(skip=false){
+  if(!storyState.active) return;
+  const overlay = document.getElementById('storyOverlay');
+  if(overlay){ overlay.classList.remove('visible'); }
+  const idx = storyState.chapterIndex;
+  const cb = storyState.onComplete;
+  storyState = { active:false, chapterIndex:null, slide:0, onComplete:null };
+  if(typeof idx === 'number'){
+    chapterIntroPlayed[idx] = true;
+    const story = chapterStories[idx];
+    if(story && story.mission){
+      startMission(story.mission);
+    }
+  }
+  if(typeof cb === 'function'){
+    setTimeout(cb, 100);
+  }
+}
+
+// ストーリーモーダルのボタンにイベントを付与
+const storyNextBtn = document.getElementById('storyNext');
+const storySkipBtn = document.getElementById('storySkip');
+if(storyNextBtn){ storyNextBtn.addEventListener('click', advanceStorySlide); }
+if(storySkipBtn){ storySkipBtn.addEventListener('click', () => finishStory(true)); }
+const dialogueNextBtn = document.getElementById('dialogueNext');
+if(dialogueNextBtn){ dialogueNextBtn.addEventListener('click', closeDialogue); }
+const goalSkipBtn = document.getElementById('goalSkip');
+const goalBackBtn = document.getElementById('goalBackStep');
+const goalNextBtn = document.getElementById('goalNextStep');
+const goalManualToggleBtn = document.getElementById('goalManualToggle');
+const goalManualBackBtn = document.getElementById('goalManualBack');
+const goalManualConfirmBtn = document.getElementById('goalManualConfirm');
+const goalAcceptRecommendationBtn = document.getElementById('goalAcceptRecommendation');
+const reviewCloseBtn = document.getElementById('reviewCloseButton');
+const coachIntroContinueBtn = document.getElementById('coachIntroContinue');
+const quizContinueBtn = document.getElementById('quizContinue');
+if(goalSkipBtn){ goalSkipBtn.addEventListener('click', () => confirmGoalSetting(true)); }
+if(goalBackBtn){ goalBackBtn.addEventListener('click', rewindGoalWizard); }
+if(goalNextBtn){ goalNextBtn.addEventListener('click', advanceGoalWizard); }
+if(goalManualToggleBtn){ goalManualToggleBtn.addEventListener('click', startGoalManualEdit); }
+if(goalManualBackBtn){ goalManualBackBtn.addEventListener('click', backToGoalSummary); }
+if(goalManualConfirmBtn){
+  goalManualConfirmBtn.addEventListener('click', () => {
+    const moneyInput = parseInt(document.getElementById('manualGoalMoney').value, 10);
+    const happyInput = parseInt(document.getElementById('manualGoalHappy').value, 10);
+    confirmGoalSetting(false, { money: moneyInput, happy: happyInput });
+  });
+}
+if(goalAcceptRecommendationBtn){
+  goalAcceptRecommendationBtn.addEventListener('click', () => {
+    confirmGoalSetting(false, goalWizard?.proposal || computeGoalProposal());
+  });
+}
+if(reviewCloseBtn){
+  reviewCloseBtn.addEventListener('click', closeHalfYearReview);
+}
+if(coachIntroContinueBtn){
+  coachIntroContinueBtn.addEventListener('click', closeCoachIntro);
+}
+if(quizContinueBtn){
+  quizContinueBtn.addEventListener('click', closeSeminarQuiz);
+}
+
+function updateStatus(){
+  const monthLabel = monthlyEvents[turn] ? monthlyEvents[turn].m : '結果';
+  const totalMonths = monthlyEvents.length;
+  const displayTurn = Math.min(turn+1, totalMonths);
+  document.getElementById('status').innerHTML =
+    `📅 ${monthLabel}　（${displayTurn}/${totalMonths}）<br>`+
+    `💵 所持金: ￥${money}　`+
+    `💖 幸福度: ${happy}`;
+  updateChapterBanner();
+  applySeasonTheme();
+  updateMeters();
+  updateGoalIndicator();
+}
+
+function renderCoachSelect(){
+  const eventEl = document.getElementById('event');
+  const ch = document.getElementById('choices');
+  const coachBox = document.getElementById('coach');
+  document.getElementById('status').innerHTML = '👩‍🏫 まずはコーチを選んでください';
+  updateChapterBanner();
+  applySeasonTheme();
+  updateMeters();
+  renderBadges();
+  renderLog();
+  activeMission = null;
+  updateMissionBoard();
+  dialogueState = { active:false, onClose:null };
+  awaitingDialogue = false;
+  goalPlan = null;
+  updateGoalIndicator();
+  const dialogueOverlay = document.getElementById('dialogueOverlay');
+  if(dialogueOverlay){ dialogueOverlay.classList.remove('visible'); }
+  coachBox.style.display = 'none';
+
+  const cards = Object.values(coachProfiles).map(p => `
+    <div class='coach-card'>
+      <img src='${p.avatarSrc}' alt='${p.name}'>
+      <div class='coach-title'>${p.name}</div>
+      <div class='coach-desc'>${p.desc}</div>
+      <button data-key='${p.key}'>このコーチを選ぶ</button>
+    </div>`).join('');
+
+  eventEl.innerHTML = `<h3>コーチを選択</h3><p>雰囲気の合うコーチを選んで、1年の旅を始めましょう。</p>`;
+  ch.classList.remove('row');
+  ch.innerHTML = `<div class='select-wrap'>${cards}</div>`;
+
+  ch.querySelectorAll('button[data-key]').forEach(btn => {
+    btn.onclick = () => {
+      const key = btn.getAttribute('data-key');
+      startGameWithCoach(key);
+    };
+  });
+}
+
+function startGameWithCoach(key){
+  selectedCoach = coachProfiles[key];
+  turn = 0;
+  money = START_MONEY;
+  happy = START_HAPPY;
+  for(const k in tagPickCount){ delete tagPickCount[k]; }
+  unlockedBadges.clear();
+  logEntries.length = 0;
+  monthHistory.length = 0;
+  completedReviews.clear();
+  completedQuizTurns.clear();
+  quizCycleIndexYear1 = 0;
+  quizCycleIndexYear2 = 0;
+  chapterIntroPlayed = chapterInfo.map(()=>false);
+  activeMission = null;
+  storyState = { active:false, chapterIndex:null, slide:0, onComplete:null };
+  dialogueState = { active:false, onClose:null };
+  awaitingDialogue = false;
+  goalPlan = null;
+  reviewState = { active:false, onClose:null };
+  quizState = { active:false, onClose:null, quiz:null, answered:false };
+  const overlay = document.getElementById('storyOverlay');
+  if(overlay){ overlay.classList.remove('visible'); }
+  const dOverlay = document.getElementById('dialogueOverlay');
+  if(dOverlay){ dOverlay.classList.remove('visible'); }
+  const reviewOverlay = document.getElementById('reviewOverlay');
+  if(reviewOverlay){ reviewOverlay.classList.remove('visible'); }
+  const quizOverlay = document.getElementById('quizOverlay');
+  if(quizOverlay){ quizOverlay.classList.remove('visible'); }
+  document.getElementById('choices').classList.add('row');
+  renderBadges();
+  renderLog();
+  updateMissionBoard();
+  updateStatus();
+  openCoachIntro();
+}
+
+function showCoach(tag, message){
+  const box = document.getElementById('coach');
+  if(!selectedCoach){ box.style.display='none'; return; }
+  const line = message || getCoachLine(tag);
+  box.style.display = 'flex';
+  box.innerHTML = `
+    <div class="coach-avatar"><img src='${selectedCoach.avatarSrc}' alt='${selectedCoach.name}'></div>
+    <div class="coach-text">
+      <div class="coach-name">${selectedCoach.name}</div>
+      <div>${line}</div>
+    </div>`;
+  // 再生アニメ
+  box.style.animation = 'none';
+  void box.offsetWidth; // reflow
+  box.style.animation = 'fadeInUp 0.8s ease forwards';
+}
+
+function handleChoice(eventData, choice){
+  if(awaitingDialogue || storyState.active) return;
+  awaitingDialogue = true;
+  sparkleEffect();
+  const beforeMoney = money;
+  const beforeHappy = happy;
+  money += choice.money || 0;
+  happy += choice.happy || 0;
+  tagPickCount[choice.tag] = (tagPickCount[choice.tag]||0)+1;
+  addLogEntry(eventData.m, choice.label, choice);
+  recordMonthHistory({
+    turnIndex: turn,
+    monthLabel: eventData.m,
+    choiceLabel: choice.label,
+    tag: choice.tag,
+    moneyDelta: choice.money || 0,
+    happyDelta: choice.happy || 0,
+    beforeMoney,
+    beforeHappy,
+    afterMoney: money,
+    afterHappy: happy
+  });
+  handleMissionProgress(choice.tag);
+  evaluateBadges(choice);
+  const coachLine = getCoachLine(choice.tag);
+  showCoach(choice.tag, coachLine);
+  updateStatus();
+  const dialogueLines = buildDialogueScript(eventData, choice, coachLine);
+  const proceed = () => {
+    awaitingDialogue = false;
+    turn++;
+    updateStatus();
+    const finalize = () => setTimeout(nextEvent, 320);
+    runPostTurnSequence(turn, finalize);
+  };
+  const opened = openDialogue(dialogueLines, proceed);
+  if(!opened){
+    proceed();
+  }
+}
+
+function runPostTurnSequence(currentTurn, done){
+  if(shouldTriggerQuiz(currentTurn)){
+    openSeminarQuiz(currentTurn, () => runPostTurnSequence(currentTurn, done));
+    return;
+  }
+  if(shouldTriggerReview(currentTurn)){
+    openHalfYearReview(currentTurn, done);
+    return;
+  }
+  done();
+}
+
+function nextEvent(){
+  // コーチ未選択なら選択画面へ
+  if(!selectedCoach){ renderCoachSelect(); return; }
+  if(turn >= monthlyEvents.length){ endGame(); return; }
+  const chapterIdx = getChapterIndex();
+  if(!chapterIntroPlayed[chapterIdx]){
+    openChapterStory(chapterIdx, nextEvent);
+    return;
+  }
+  const e = monthlyEvents[turn];
+  document.getElementById('event').innerHTML = `<strong>${e.m}</strong><br><p>${e.text}</p>`;
+  const ch = document.getElementById('choices');
+  ch.innerHTML = '';
+  e.choices.forEach(c => {
+    const b = document.createElement('button');
+    b.textContent = c.label;
+    b.onclick = () => handleChoice(e, c);
+    ch.appendChild(b);
+  });
+  updateStatus();
+}
+
+function endGame(){
+  let type = '';
+  if(happy > 70 && money > 60000) type = '💎 バランス美人タイプ';
+  else if(happy > 70) type = '🌷 ハートフルタイプ';
+  else if(money > 70000) type = '📈 グロースモードタイプ';
+  else type = '💭 マイペースタイプ';
+
+  // 個別アドバイス（簡易）
+  const tips = [];
+  if((tagPickCount.overseas||0)===0) tips.push('海外分散の一歩を来年は検討してみましょう（ETF/投信の少額から）。');
+  if((tagPickCount.rebalance||0)<2) tips.push('年1〜2回の“リバランス”で、感情ではなく設計で運用を。');
+  if((tagPickCount.health||0)===0) tips.push('健康は長生き配当。小さく続ける習慣を。');
+  if(money < 40000) tips.push('所持金のクッションを増やすため、固定費と副収入の両面を点検しましょう。');
+
+  const goalSummary = goalPlan ? `
+      <strong>目標の振り返り</strong>
+      <ul>
+        <li>💵 所持金：${money >= goalPlan.money ? '達成！' : `あと￥${(goalPlan.money - money).toLocaleString()}`}</li>
+        <li>💖 幸福度：${happy >= goalPlan.happy ? '達成！' : `あと${goalPlan.happy - happy}`}</li>
+      </ul>` : '';
+
+  document.getElementById('event').innerHTML = `
+    <h3>結果発表</h3>
+    <p>あなたは <strong>${type}</strong> でした。</p>
+    <div style="text-align:left; max-width:600px; margin:12px auto; background:#fff7fb; border:1px solid #f0cfe1; padding:12px; border-radius:10px;">
+      <strong>講座ポイント（要点）</strong>
+      <ul>
+        <li>長期・分散・継続が基本。積み立ては未来へのプレゼント。</li>
+        <li>海外投資は“世界でお金を働かせる”こと。通貨リスクは学びで軽減。</li>
+        <li>固定費の見直しと目的別口座で、迷いを減らして続けやすく。</li>
+        <li>年1〜2回のリバランスで、設計図に沿った運用を。</li>
+      </ul>
+      <div style="text-align:center; margin-top:14px;">
+        <a href="https://www.instagram.com/kaorin_family/" target="_blank" style="display:inline-block; background:#d06ba0; color:#fff; padding:10px 18px; border-radius:8px; text-decoration:none; font-weight:600; text-decoration:none;">
+          💡 お金のセミナーに参加する（申し込み）
+        </a>
+      </div>
+      ${goalSummary}
+      ${tips.length?('<strong>あなたへのひとこと</strong><ul>'+tips.map(t=>`<li>${t}</li>`).join('')+'</ul>'):''}
+    </div>
+  `;
+  document.getElementById('choices').innerHTML = '<button onclick="location.reload()">もう一度遊ぶ（コーチ選びから）</button>';
+  showCoach('ending');
+  sparkleEffect(40);
+}
+
+function sparkleEffect(count=10){
+  for(let i=0;i<count;i++){
+    const s=document.createElement('div');
+    s.className='sparkle';
+    s.style.left=Math.random()*100+'vw';
+    s.style.animationDuration=(3+Math.random()*2)+'s';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),4000);
+  }
+}
+
+// 開始：まずはコーチ選択画面
+nextEvent();
+</script>
 </body>
 </html>
